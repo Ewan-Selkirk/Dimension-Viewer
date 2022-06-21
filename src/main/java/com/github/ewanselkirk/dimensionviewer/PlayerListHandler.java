@@ -1,22 +1,22 @@
 package com.github.ewanselkirk.dimensionviewer;
 
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, value = Dist.DEDICATED_SERVER)
 public class PlayerListHandler {
 
     private static Map<String, String> players = new HashMap<>();
+    private static List<ServerPlayer> playerList = new ArrayList<>();
     
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerDimensionChange(final PlayerEvent.PlayerChangedDimensionEvent event) {
@@ -24,18 +24,15 @@ public class PlayerListHandler {
 
         players.put(player.getScoreboardName(), event.getTo().location().toString());
 
-        event.getEntityLiving().getServer().getPlayerList().getPlayer(event.getPlayer().getUUID())
-                .refreshTabListName();
+        updatePlayerList();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static synchronized void changeUserDisplayName(PlayerEvent.TabListNameFormat event){
         try {
-            String dimension = makeTitleCase(players.get(event.getPlayer().getScoreboardName()));
-            event.setDisplayName(new TextComponent(event.getPlayer().getScoreboardName() + "\u00A72" +
-                    " <" + dimension + ">"));
+            event.setDisplayName(event.getPlayer().getDisplayName().copy().append(replaceTokens(event)));
         } catch (NullPointerException exception) {
-            DimensionViewer.LOGGER.log(Level.SEVERE, exception.getMessage());
+            DimensionViewer.LOGGER.log(Level.WARNING, exception.getMessage());
         }
 
     }
@@ -46,12 +43,15 @@ public class PlayerListHandler {
         players.put(event.getPlayer().getScoreboardName(),
                 event.getPlayer().level.dimension().location().toString());
 
-        event.getEntityLiving().getServer().getPlayerList().getPlayer(event.getPlayer().getUUID()).refreshTabListName();
+        playerList = event.getEntityLiving().getServer().getPlayerList().getPlayers();
+        updatePlayerList();
+
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event){
         players.remove(event.getPlayer().getScoreboardName());
+        playerList = event.getEntityLiving().getServer().getPlayerList().getPlayers();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -59,8 +59,11 @@ public class PlayerListHandler {
         players.put(event.getPlayer().getScoreboardName(),
                 event.getPlayer().level.dimension().location().toString());
 
-        event.getEntityLiving().getServer().getPlayerList().getPlayer(event.getPlayer().getUUID())
-                .refreshTabListName();
+        updatePlayerList();
+    }
+
+    private static void updatePlayerList() {
+        playerList.forEach((p) -> p.refreshTabListName());
     }
 
     /**
@@ -92,6 +95,40 @@ public class PlayerListHandler {
         }
 
         return text;
+    }
+
+    private static String replaceTokens(PlayerEvent event) {
+        String format = Config.LIST_FORMAT.get();
+        Config.FontColor color = Config.FONT_COLOR.get();
+        boolean per_dim_colors = Config.PER_DIM_COLOR.get();
+
+
+        // Get player dimension from the 'players' map
+        String dimension = makeTitleCase(players.get(event.getPlayer().getScoreboardName()));
+
+        format = format.replace("%d", dimension);
+        if (!per_dim_colors) {
+            format = format.replace("%c", color.value);
+        } else {
+            format = format.replace("%c", switch(players.get(event.getPlayer().getScoreboardName())){
+                case "minecraft:overworld" -> Config.FontColor.GREEN.value;
+                case "minecraft:the_nether" -> Config.FontColor.RED.value;
+                case "minecraft:the_end" -> Config.FontColor.DARK_PURPLE.value;
+                default -> Config.FontColor.DARK_BLUE.value;
+            });
+        }
+
+        return format;
+    }
+
+    @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class ModEventBusEvents {
+        @SubscribeEvent
+        public static void onConfigChanged(ModConfigEvent.Reloading event) {
+            if (event.getConfig().getModId().contains(DimensionViewer.MODID)) {
+                updatePlayerList();
+            }
+        }
     }
 
 }
