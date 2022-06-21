@@ -1,0 +1,34 @@
+modLoader="javafml" #mandatory
+loaderVersion="[40,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+license="All rights reserved"
+
+[[mods]] #mandatory
+modId="dimensionviewer" #mandatory
+version="${file.jarVersion}" #mandatory
+displayName="Dimension Viewer" #mandatory
+authors="Ewan Selkirk" #optional
+description='''
+Adds the dimension that a user is currently in to the tab menu for easy access.
+
+This is a server-side mod and therefore does not need to be intalled on the client.
+'''
+
+[[dependencies.dimensionviewer]] #optional
+    # the modid of the dependency
+    modId="forge" #mandatory
+    # Does this dependency have to exist - if not, ordering below must be specified
+    mandatory=true #mandatory
+    # The version range of the dependency
+    versionRange="[40,)" #mandatory
+    # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
+    ordering="NONE"
+    # Side this dependency is applied on - BOTH, CLIENT or SERVER
+    side="BOTH"
+# Here's another dependency
+[[dependencies.dimensionviewer]]
+    modId="minecraft"
+    mandatory=true
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+    versionRange="[1.18.2,1.19)"
+    ordering="NONE"
+    side="BOTH"
