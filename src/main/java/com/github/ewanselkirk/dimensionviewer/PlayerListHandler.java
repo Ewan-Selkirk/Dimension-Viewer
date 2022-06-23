@@ -14,7 +14,6 @@ import java.util.logging.Level;
 
 @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, value = Dist.DEDICATED_SERVER)
 public class PlayerListHandler {
-
     private static Map<String, String> players = new HashMap<>();
     private static List<ServerPlayer> playerList = new ArrayList<>();
     
@@ -38,14 +37,13 @@ public class PlayerListHandler {
     }
 
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.LOW)
     public static synchronized void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent event){
         players.put(event.getPlayer().getScoreboardName(),
                 event.getPlayer().level.dimension().location().toString());
 
         playerList = event.getEntityLiving().getServer().getPlayerList().getPlayers();
         updatePlayerList();
-
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -62,6 +60,10 @@ public class PlayerListHandler {
         updatePlayerList();
     }
 
+    /**
+     * Method for updating the player list. Should be called anytime a change
+     * is made to the player list (E.G. player connects/disconnects)
+     */
     private static void updatePlayerList() {
         playerList.forEach((p) -> p.refreshTabListName());
     }
@@ -101,20 +103,40 @@ public class PlayerListHandler {
         String format = Config.LIST_FORMAT.get();
         Config.FontColor color = Config.FONT_COLOR.get();
         boolean per_dim_colors = Config.PER_DIM_COLOR.get();
-
+        Config.FontColor[] dim_colors = {
+                Config.OVERWORLD_COLOR.get(),
+                Config.NETHER_COLOR.get(),
+                Config.END_COLOR.get()
+        };
 
         // Get player dimension from the 'players' map
         String dimension = makeTitleCase(players.get(event.getPlayer().getScoreboardName()));
 
-        format = format.replace("%d", dimension);
+        // Map tokens to their respective codes for ease of use
+        Map<String, String> tokens = new HashMap<>(){
+            {
+                put("%d", dimension);
+                put("%i", "\u00A7o");
+                put("%b", "\u00A7l");
+                put("%u", "\u00A7n");
+                put("%o", "\u00A7k");
+                put("%s", "\u00A7m");
+                put("%r", "\u00A7r");
+            }
+        };
+
+        for (var s: tokens.keySet()) {
+            format = format.replace(s, tokens.get(s));
+        }
+
         if (!per_dim_colors) {
             format = format.replace("%c", color.value);
         } else {
             format = format.replace("%c", switch(players.get(event.getPlayer().getScoreboardName())){
-                case "minecraft:overworld" -> Config.FontColor.GREEN.value;
-                case "minecraft:the_nether" -> Config.FontColor.RED.value;
-                case "minecraft:the_end" -> Config.FontColor.DARK_PURPLE.value;
-                default -> Config.FontColor.DARK_BLUE.value;
+                case "minecraft:overworld" -> dim_colors[0].value;
+                case "minecraft:the_nether" -> dim_colors[1].value;
+                case "minecraft:the_end" -> dim_colors[2].value;
+                default -> color.value;
             });
         }
 
