@@ -44,6 +44,10 @@ public class Config {
 
     public static ForgeConfigSpec.BooleanValue PER_DIM_COLOR;
 
+    public static ForgeConfigSpec.BooleanValue DIM_IN_CHAT_NAME;
+
+    public static ForgeConfigSpec.BooleanValue CHAT_DIM_HOVER;
+
     static {
         BUILDER.comment("Customization Settings").push("customization");
 
@@ -59,7 +63,7 @@ public class Config {
                         "    %d - Dimension Name", "    %c - Color value (default or dimension-based)", "    %i - Italic font",
                         "    %b - Bold font", "    %u - Underline font", "    %o - Obfuscated font",
                         "    %s - Strikethrough font", "    %r - Font reset")
-                .define("listFormat", "%c <%d>");
+                .define("listFormat", " %c%i<%d>");
         FONT_COLOR = BUILDER.comment("The color to use for the dimension font if perDimColorPath is false.",
                         "(In the event of a modded dimension being entered, this color will be used as a fallback)")
                 .defineEnum("fontColor", FontColor.DARK_AQUA);
@@ -67,17 +71,32 @@ public class Config {
                 .define("perDimColorPath", true);
 
         PerDimensionCustomization();
+
+        ChatCustomization();
     }
 
     private static void PerDimensionCustomization() {
         BUILDER.comment("Per-Dimension Customization").push("dimension");
 
         OVERWORLD_COLOR = BUILDER.comment("Color to use for the Overworld")
-                        .defineEnum("overworldColor", FontColor.GREEN);
+                .defineEnum("overworldColor", FontColor.GREEN);
         NETHER_COLOR = BUILDER.comment("Color to use for the Nether")
-                        .defineEnum("netherColor", FontColor.DARK_RED);
+                .defineEnum("netherColor", FontColor.DARK_RED);
         END_COLOR = BUILDER.comment("Color to use for the End")
-                        .defineEnum("endColor", FontColor.DARK_PURPLE);
+                .defineEnum("endColor", FontColor.DARK_PURPLE);
+
+        BUILDER.pop();
+    }
+
+    private static void ChatCustomization() {
+        BUILDER.comment("Chat-related Customization").push("chat");
+
+        DIM_IN_CHAT_NAME = BUILDER.comment("Should a users' current dimension be added to chat messages?")
+                .define("dimInChatName", false);
+
+        CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display which mod added the dimension",
+                        "Requires 'dimInChatName' to be set to true")
+                .define("chatDimHover", true);
 
         BUILDER.pop();
     }

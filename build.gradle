@@ -15,7 +15,7 @@ plugins {
 }
 apply plugin: 'net.minecraftforge.gradle'
 
-version = '1.1.2'
+version = '1.2'
 group = 'com.github.ewanselkirk.dimensionviewer' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'dimensionviewer_1.18'
 
@@ -61,6 +61,8 @@ minecraft {
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             property 'forge.enabledGameTestNamespaces', 'dimensionviewer'
+
+//            args '--username', 'test'
 
             mods {
                 dimensionviewer {
