@@ -1,4 +1,4 @@
-package com.github.ewanselkirk.dimensionviewer;
+package com.github.ewan_selkirk.dimensionviewer;
 
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;

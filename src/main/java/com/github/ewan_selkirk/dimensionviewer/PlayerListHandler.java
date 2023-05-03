@@ -1,13 +1,9 @@
-package com.github.ewanselkirk.dimensionviewer;
+package com.github.ewan_selkirk.dimensionviewer;
 
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -20,30 +16,41 @@ import java.util.*;
 
 @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, value = Dist.DEDICATED_SERVER)
 public class PlayerListHandler {
-    private final static Map<String, ResourceLocation> players = new HashMap<>();
+    private static final Map<String, ResourceLocation> players = new HashMap<>();
     private static List<ServerPlayer> playerList = new ArrayList<>();
+
+    // Map tokens to their respective codes for ease of use
+    private static final Map<String, String> tokens = new HashMap<>() {
+        {
+            put("%i", "§o");
+            put("%b", "§l");
+            put("%u", "§n");
+            put("%o", "§k");
+            put("%s", "§m");
+            put("%r", "§r");
+        }
+    };
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        Player player = event.getPlayer();
-
-        players.put(player.getStringUUID(), event.getTo().location());
+        players.put(event.getPlayer().getStringUUID(), event.getTo().location());
 
         updatePlayerList();
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static synchronized void changeUserDisplayName(PlayerEvent.TabListNameFormat event) {
+        // If the display name has been changed with the PlayerEvent#NameFormat event we can simply use that
+        // for the tab list name format.
         if (Config.DIM_IN_CHAT_NAME.get()) {
             event.setDisplayName(event.getPlayer().getDisplayName());
             return;
         }
 
         try {
-            event.setDisplayName(new TextComponent(event.getPlayer().getScoreboardName())
-                    .append(replaceTokens(event)));
+            event.setDisplayName(event.getPlayer().getDisplayName().copy().append(replaceTokens(event)));
+        } catch (NullPointerException e) {
 
-        } catch (NullPointerException exception) {
-//            DimensionViewer.LOGGER.log(Level.WARNING, exception.getMessage());
         }
 
     }
@@ -53,24 +60,26 @@ public class PlayerListHandler {
         if (!Config.DIM_IN_CHAT_NAME.get()) return;
 
         try {
-            event.setDisplayname(event.getDisplayname().copy().append(
-                new TextComponent(replaceTokens(event))).setStyle(Style.EMPTY.withHoverEvent(
-                    !Config.CHAT_DIM_HOVER.get() ? null : new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new TextComponent(
-                            makeTitleCase(
-                                splitResourceLocation(players.get(event.getPlayer().getStringUUID()), 0)
-                            )
-                        )
-                    )
-                ))
-            );
-        } catch (NullPointerException exception) {
-//            DimensionViewer.LOGGER.log(Level.WARNING, exception.getMessage());
+            MutableComponent name = event.getDisplayname().copy();
+            name.append(replaceTokens(event));
+
+            if (!Config.CHAT_DIM_HOVER.get()) {
+                event.setDisplayname(name);
+                return;
+            }
+
+            name.setStyle(Style.EMPTY.withHoverEvent(
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(getSource(event)))
+            ));
+
+            event.setDisplayname(name);
+
+        } catch (NullPointerException e) {
         }
 
     }
 
-    @SubscribeEvent(priority = EventPriority.LOW)
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent event) {
         playerList = Objects.requireNonNull(event.getPlayer().getServer()).getPlayerList().getPlayers();
         playerList.forEach(p -> players.put(p.getStringUUID(), p.level.dimension().location()));
@@ -86,21 +95,14 @@ public class PlayerListHandler {
         updatePlayerList();
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public static synchronized void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        players.put(event.getPlayer().getStringUUID(),
-                event.getPlayer().level.dimension().location());
+        try {
+            players.put(event.getPlayer().getStringUUID(), event.getPlayer().level.dimension().location());
+            updatePlayerList();
+        } catch (NullPointerException e) {
 
-        updatePlayerList();
-    }
-
-    /**
-     * Method for updating the player list. Should be called anytime a change
-     * is made to the player list (E.G. player connects/disconnects)
-     */
-    private static void updatePlayerList() {
-        if (Config.DIM_IN_CHAT_NAME.get()) playerList.forEach(ServerPlayer::refreshDisplayName);
-        playerList.forEach(ServerPlayer::refreshTabListName);
+        }
     }
 
     private static String splitResourceLocation(ResourceLocation key, int pos) {
@@ -151,22 +153,8 @@ public class PlayerListHandler {
         };
 
         // Get player dimension from the 'players' map
-        String dimension = makeTitleCase(splitResourceLocation(
-                players.get(event.getPlayer().getStringUUID()), 1)
-        );
-
-        // Map tokens to their respective codes for ease of use
-        final Map<String, String> tokens = new HashMap<>() {
-            {
-                put("%d", dimension);
-                put("%i", "\u00A7o");
-                put("%b", "\u00A7l");
-                put("%u", "\u00A7n");
-                put("%o", "\u00A7k");
-                put("%s", "\u00A7m");
-                put("%r", "\u00A7r");
-            }
-        };
+        String dimension = getDimension(event);
+        tokens.put("%d", dimension);
 
         for (var s: tokens.keySet()) {
             format = format.replace(s, tokens.get(s));
@@ -186,6 +174,42 @@ public class PlayerListHandler {
         return format;
     }
 
+    /**
+     * Method for updating the player list. Should be called anytime a change
+     * is made to the player list (E.G. player connects/disconnects)
+     * @return Whether the player list was updated successfully.
+     */
+    private static boolean updatePlayerList() {
+        if (playerList.size() > 0) {
+            playerList = Objects.requireNonNull(playerList.get(0).getServer()).getPlayerList().getPlayers();
+
+            if (Config.DIM_IN_CHAT_NAME.get()) playerList.forEach(ServerPlayer::refreshDisplayName);
+            playerList.forEach(ServerPlayer::refreshTabListName);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the source of a resource location (E.G. minecraft:the_end -> Minecraft)
+     * @param event A player event to get the player UUID from.
+     * @return The source as a Title-case string.
+     */
+    private static String getSource(PlayerEvent event) {
+        return makeTitleCase(splitResourceLocation(players.get(event.getPlayer().getStringUUID()), 0));
+    }
+
+    /**
+     * Returns the dimension of a resource location (E.G. minecraft:the_end -> The End)
+     * @param event A player event to get the player UUID from.
+     * @return The dimension as a Title-case string.
+     */
+    private static String getDimension(PlayerEvent event) {
+        return makeTitleCase(splitResourceLocation(players.get(event.getPlayer().getStringUUID()), 1));
+    }
+
     @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
     public static class ModEventBusEvents {
         @SubscribeEvent
@@ -202,10 +226,12 @@ public class PlayerListHandler {
         public static void refreshPlayerDimensionsCommand(RegisterCommandsEvent event) {
             event.getDispatcher().register(
                     Commands.literal("refreshPlayerList").executes(ctx -> {
-                        ctx.getSource().sendSuccess(Component.nullToEmpty("Manually refreshing player list..."),
-                                true);
-
-                        PlayerListHandler.updatePlayerList();
+                        if (PlayerListHandler.updatePlayerList()) {
+                            ctx.getSource().sendSuccess(Component.nullToEmpty("[Dimension Viewer] Manually refreshing player list..."),
+                                    true);
+                        } else {
+                            ctx.getSource().sendFailure(Component.nullToEmpty("[Dimension Viewer] Could not manually refresh. No players detected..."));
+                        }
                         return 0;
                     })
             );

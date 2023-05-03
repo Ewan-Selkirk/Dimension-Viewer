@@ -1,4 +1,4 @@
-package com.github.ewanselkirk.dimensionviewer;
+package com.github.ewan_selkirk.dimensionviewer;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
@@ -7,22 +7,22 @@ import net.minecraftforge.fml.common.Mod;
 public class Config {
 
     public enum FontColor {
-        DARK_RED("\u00A74"),
-        RED("\u00A7c"),
-        GOLD("\u00A76"),
-        YELLOW("\u00A7e"),
-        DARK_GREEN("\u00A72"),
-        GREEN("\u00A7a"),
-        AQUA("\u00A7b"),
-        DARK_AQUA("\u00A73"),
-        DARK_BLUE(" \u00A71"),
-        BLUE(" \u00A79"),
-        LIGHT_PURPLE("\u00A7d"),
-        DARK_PURPLE("\u00A75"),
-        WHITE("\u00A7f"),
-        GRAY("\u00A77"),
-        DARK_GRAY("\u00A78"),
-        BLACK("\u00A70");
+        DARK_RED("§4"),
+        RED("§c"),
+        GOLD("§6"),
+        YELLOW("§e"),
+        DARK_GREEN("§2"),
+        GREEN("§a"),
+        AQUA("§b"),
+        DARK_AQUA("§3"),
+        DARK_BLUE("§1"),
+        BLUE("§9"),
+        LIGHT_PURPLE("§d"),
+        DARK_PURPLE("§5"),
+        WHITE("§f"),
+        GRAY("§7"),
+        DARK_GRAY("§8"),
+        BLACK("§0");
 
         public final String value;
 
@@ -92,7 +92,7 @@ public class Config {
         BUILDER.comment("Chat-related Customization").push("chat");
 
         DIM_IN_CHAT_NAME = BUILDER.comment("Should a users' current dimension be added to chat messages?")
-                .define("dimInChatName", false);
+                .define("dimInChatName", true);
 
         CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display which mod added the dimension",
                         "Requires 'dimInChatName' to be set to true")
