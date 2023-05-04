@@ -16,7 +16,7 @@ Mods that make changes to the tab list name format (or even the regular display 
 
 If there are any issues encountered (no dimension being shown for a player) either have someone change dimension once or use the command `/refreshPlayerList` to try and manually update the player list.
 
-<img src="img/DimensionViewerCompatibility.png" width="75%">
+<img src="img/DimensionViewerCompatibility.png" width="100%">
 
 ## To-Do
 - [ ] Custom Mod Configuration
@@ -26,4 +26,9 @@ If there are any issues encountered (no dimension being shown for a player) eith
 
 
 *Only default Minecraft text colours are currently available. <br>
-**Only colours for vanilla dimensions can be customized individually at the moment. 
+**Only colours for vanilla dimensions can be customized individually at the moment.
+
+<a href="https://www.curseforge.com/minecraft/mc-mods/dimension-viewer">![CurseForge Link](https://cf.way2muchnoise.eu/title/dimension-viewer(989AFF).svg?badge_style=for_the_badge)</a>
+![CurseForge Versions](https://cf.way2muchnoise.eu/versions/dimension-viewer_all(989AFF).svg?badge_style=for_the_badge)
+
+![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/3aeFezQk?label=Modrinth&logo=Modrinth&style=for-the-badge)
