@@ -33,7 +33,7 @@ public class PlayerListHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        players.put(event.getPlayer().getStringUUID(), event.getTo().location());
+        players.put(event.getEntity().getStringUUID(), event.getTo().location());
 
         updatePlayerList();
     }
@@ -43,12 +43,12 @@ public class PlayerListHandler {
         // If the display name has been changed with the PlayerEvent#NameFormat event we can simply use that
         // for the tab list name format.
         if (Config.DIM_IN_CHAT_NAME.get()) {
-            event.setDisplayName(event.getPlayer().getDisplayName());
+            event.setDisplayName(event.getEntity().getDisplayName());
             return;
         }
 
         try {
-            event.setDisplayName(event.getPlayer().getDisplayName().copy().append(replaceTokens(event)));
+            event.setDisplayName(event.getEntity().getDisplayName().copy().append(replaceTokens(event)));
         } catch (NullPointerException e) {
 
         }
@@ -69,7 +69,7 @@ public class PlayerListHandler {
             }
 
             name.setStyle(Style.EMPTY.withHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(getSource(event)))
+                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(getSource(event)))
             ));
 
             event.setDisplayname(name);
@@ -81,7 +81,7 @@ public class PlayerListHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent event) {
-        playerList = Objects.requireNonNull(event.getPlayer().getServer()).getPlayerList().getPlayers();
+        playerList = Objects.requireNonNull(event.getEntity().getServer()).getPlayerList().getPlayers();
         playerList.forEach(p -> players.put(p.getStringUUID(), p.level.dimension().location()));
 
         updatePlayerList();
@@ -89,8 +89,8 @@ public class PlayerListHandler {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static synchronized void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event) {
-        players.remove(event.getPlayer().getStringUUID());
-        playerList = Objects.requireNonNull(event.getPlayer().getServer()).getPlayerList().getPlayers();
+        players.remove(event.getEntity().getStringUUID());
+        playerList = Objects.requireNonNull(event.getEntity().getServer()).getPlayerList().getPlayers();
 
         updatePlayerList();
     }
@@ -98,7 +98,7 @@ public class PlayerListHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static synchronized void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         try {
-            players.put(event.getPlayer().getStringUUID(), event.getPlayer().level.dimension().location());
+            players.put(event.getEntity().getStringUUID(), event.getEntity().level.dimension().location());
             updatePlayerList();
         } catch (NullPointerException e) {
 
@@ -163,7 +163,7 @@ public class PlayerListHandler {
         if (!per_dim_colors) {
             format = format.replace("%c", color.value);
         } else {
-            format = format.replace("%c", switch (players.get(event.getPlayer().getStringUUID()).toString()) {
+            format = format.replace("%c", switch (players.get(event.getEntity().getStringUUID()).toString()) {
                 case "minecraft:overworld" -> dim_colors[0].value;
                 case "minecraft:the_nether" -> dim_colors[1].value;
                 case "minecraft:the_end" -> dim_colors[2].value;
@@ -198,7 +198,7 @@ public class PlayerListHandler {
      * @return The source as a Title-case string.
      */
     private static String getSource(PlayerEvent event) {
-        return makeTitleCase(splitResourceLocation(players.get(event.getPlayer().getStringUUID()), 0));
+        return makeTitleCase(splitResourceLocation(players.get(event.getEntity().getStringUUID()), 0));
     }
 
     /**
@@ -207,7 +207,7 @@ public class PlayerListHandler {
      * @return The dimension as a Title-case string.
      */
     private static String getDimension(PlayerEvent event) {
-        return makeTitleCase(splitResourceLocation(players.get(event.getPlayer().getStringUUID()), 1));
+        return makeTitleCase(splitResourceLocation(players.get(event.getEntity().getStringUUID()), 1));
     }
 
     @Mod.EventBusSubscriber(modid = DimensionViewer.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)

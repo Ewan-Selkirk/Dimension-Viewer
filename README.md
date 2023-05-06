@@ -31,4 +31,4 @@ If there are any issues encountered (no dimension being shown for a player) eith
 <a href="https://www.curseforge.com/minecraft/mc-mods/dimension-viewer">![CurseForge Link](https://cf.way2muchnoise.eu/title/dimension-viewer(989AFF).svg?badge_style=for_the_badge)</a>
 ![CurseForge Versions](https://cf.way2muchnoise.eu/versions/dimension-viewer_all(989AFF).svg?badge_style=for_the_badge)
 
-![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/3aeFezQk?label=Modrinth&logo=Modrinth&style=for-the-badge)
+<a href="https://modrinth.com/mod/dimension-viewer">![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/3aeFezQk?label=Modrinth&logo=Modrinth&style=for-the-badge)</a>
