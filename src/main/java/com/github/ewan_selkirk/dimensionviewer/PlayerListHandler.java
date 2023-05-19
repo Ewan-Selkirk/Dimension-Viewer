@@ -1,5 +1,6 @@
 package com.github.ewan_selkirk.dimensionviewer;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
@@ -163,6 +164,15 @@ public class PlayerListHandler {
         if (!per_dim_colors) {
             format = format.replace("%c", color.value);
         } else {
+            // Check for modded dimension settings first
+            for (String dim : Config.MODDED_DIMS.get()) {
+                if ((!players.get(event.getPlayer().getStringUUID()).toString().equals(dim.split(" ")[0]))) {
+                    continue;
+                }
+                format = format.replace("%c", Config.FontColor.valueOf(dim.split(" ")[1]).value);
+                break;
+            }
+
             format = format.replace("%c", switch (players.get(event.getPlayer().getStringUUID()).toString()) {
                 case "minecraft:overworld" -> dim_colors[0].value;
                 case "minecraft:the_nether" -> dim_colors[1].value;
@@ -214,7 +224,7 @@ public class PlayerListHandler {
     public static class ModEventBusEvents {
         @SubscribeEvent
         public static void onConfigChanged(ModConfigEvent.Reloading event) {
-            if (event.getConfig().getModId().contains(DimensionViewer.MODID)) {
+            if (event.getConfig().getModId().equals(DimensionViewer.MODID)) {
                 updatePlayerList();
             }
         }
@@ -223,15 +233,32 @@ public class PlayerListHandler {
     @Mod.EventBusSubscriber(modid = DimensionViewer.MODID)
     public static class RegisterCommands {
         @SubscribeEvent
-        public static void refreshPlayerDimensionsCommand(RegisterCommandsEvent event) {
+        public static void CommandRegistration(RegisterCommandsEvent event) {
             event.getDispatcher().register(
-                    Commands.literal("refreshPlayerList").executes(ctx -> {
+                    Commands.literal("refreshplayerlist").executes(ctx -> {
                         if (PlayerListHandler.updatePlayerList()) {
                             ctx.getSource().sendSuccess(Component.nullToEmpty("[Dimension Viewer] Manually refreshing player list..."),
                                     true);
                         } else {
                             ctx.getSource().sendFailure(Component.nullToEmpty("[Dimension Viewer] Could not manually refresh. No players detected..."));
                         }
+                        return 0;
+                    })
+            );
+
+            event.getDispatcher().register(
+                    Commands.literal("getdimensionid").executes(ctx -> {
+                        try {
+                            ctx.getSource().sendSuccess(
+                                    Component.nullToEmpty(
+                                            ctx.getSource().getPlayerOrException().level.dimension().location().toString()),
+                                    false);
+                        } catch (CommandSyntaxException exception) {
+                            ctx.getSource().sendFailure(
+                                    Component.nullToEmpty("[Dimension Viewer] The command could not detect a player.")
+                            );
+                        }
+
                         return 0;
                     })
             );
