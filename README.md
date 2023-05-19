@@ -20,7 +20,7 @@ If there are any issues encountered (no dimension being shown for a player) eith
 
 ## To-Do
 - [ ] Custom Mod Configuration
-  - [ ] Override colour for modded dimensions.
+  - [x] Override colour for modded dimensions.
   - [ ] A way to replace the default modid with another name.
 - [ ] Figure out some irregularities with large mod packs.
 
