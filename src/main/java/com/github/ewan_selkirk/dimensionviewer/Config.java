@@ -119,7 +119,7 @@ public class Config {
                 .defineListAllowEmpty(
                         List.of("modded_dimension_ids"),
                         () -> moddedDimensionList,
-                        (item) -> (item instanceof String i && i.matches("([a-z]+:[a-z_]+ [A-Z_]+)")
+                        (item) -> (item instanceof String i && i.matches("([a-z_]+:[a-z_]+ [A-Z_]+)")
                                 && !i.isEmpty() && FontColor.valueOf(i.split(" ")[1]) instanceof FontColor)
                 );
 
