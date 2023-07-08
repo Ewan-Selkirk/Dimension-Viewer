@@ -9,6 +9,8 @@ import java.util.List;
 @Mod.EventBusSubscriber
 public class Config {
 
+    private static final String modidRegex = "([a-z_]+:[a-z_]+)";
+
     public enum FontColor {
         DARK_RED("§4"),
         RED("§c"),
@@ -32,6 +34,16 @@ public class Config {
         FontColor(String value) {
             this.value = value;
         }
+
+        public static boolean contains(String value) {
+            for (FontColor color : FontColor.values()) {
+                if (color.name().equals(value)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     public static ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
@@ -51,9 +63,15 @@ public class Config {
 
     public static ForgeConfigSpec.BooleanValue CHAT_DIM_HOVER;
 
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> MODDED_DIMS;
-    private static List<String> moddedDimensionList = new ArrayList<>();
+    public static ForgeConfigSpec.BooleanValue ENABLE_ALIASES;
 
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> MODDED_DIMS;
+
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> DIMENSION_ALIASES;
+
+    private static final List<String> moddedDimensionList = new ArrayList<>();
+
+    private static final List<String> dimensionAliases = new ArrayList<>();
     static {
         BUILDER.comment("Customization Settings").push("customization");
 
@@ -68,13 +86,15 @@ public class Config {
         LIST_FORMAT = BUILDER.comment("Format that will be used to display the dimension in the tab list with the use of tokens:",
                         "    %d - Dimension Name", "    %c - Color value (default or dimension-based)", "    %i - Italic font",
                         "    %b - Bold font", "    %u - Underline font", "    %o - Obfuscated font",
-                        "    %s - Strikethrough font", "    %r - Font reset")
-                .define("listFormat", " %c%i<%d>");
+                        "    %s - Strikethrough font", "    %p - Player Name", "    %r - Font reset")
+                .define("listFormat", "%p %c%i<%d>");
         FONT_COLOR = BUILDER.comment("The color to use for the dimension font if perDimColorPath is false.",
                         "(In the event of a modded dimension being entered, this color will be used as a fallback)")
                 .defineEnum("fontColor", FontColor.DARK_AQUA);
         PER_DIM_COLOR = BUILDER.comment("Should each dimension have its own color?")
                 .define("perDimColorPath", true);
+        ENABLE_ALIASES = BUILDER.comment("Global toggle for dimension aliases. Requires aliases to be set below.")
+                .define("enableAliases", true);
 
         PerDimensionCustomization();
 
@@ -113,15 +133,24 @@ public class Config {
         BUILDER.comment("Modded Dimension Customization").push("modded");
 
         MODDED_DIMS = BUILDER.comment("A list of modded dimension resource IDs and a color in the format of \"modid:dim_id color\"" +
-                        "\nFor example, Twilight Forest in Gold would be \"twilightforest:twilight_forest GOLD\"" +
-                        "\nWill throw an exception if the color is not valid" +
-                        "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK")
-                .defineListAllowEmpty(
-                        List.of("modded_dimension_ids"),
-                        () -> moddedDimensionList,
-                        (item) -> (item instanceof String i && i.matches("([a-z_]+:[a-z_]+ [A-Z_]+)")
-                                && !i.isEmpty() && FontColor.valueOf(i.split(" ")[1]) instanceof FontColor)
-                );
+                "\nFor example, Twilight Forest in Gold would be \"twilightforest:twilight_forest GOLD\"" +
+                "\nWill throw an exception if the color is not valid" +
+                "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK")
+            .defineListAllowEmpty(
+                List.of("modded_dimension_ids"),
+                () -> moddedDimensionList,
+                (item) -> (item instanceof String i && i.matches(modidRegex + " ([A-Z_]+)")
+                        && (FontColor.contains(i.split(" ")[1])))
+            );
+
+        DIMENSION_ALIASES = BUILDER.comment("A list of aliases to use instead of the original dimension ID." +
+                "\nUses the format 'modid:dim_id New Name'." +
+                "\nFor example, to replace 'Overworld' with 'Grasslands' you would use 'minecraft:overworld Grasslands'")
+            .defineListAllowEmpty(
+                List.of("dimensionAliases"),
+                () -> dimensionAliases,
+                (item) -> (item instanceof String i && i.matches(modidRegex + " (.*)"))
+            );
 
         BUILDER.pop();
     }

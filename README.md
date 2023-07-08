@@ -5,7 +5,7 @@ A highly customizable server-side Minecraft Forge mod for viewing what dimension
 <img src="img/DimensionViewer.png" width="100%" style="margin: 0px 1rem;">
 
 ## Configuration
-By modifying the config file, you can change the colour* of the text on a per-dimension basis**, allow showing the dimension in chat messages and change the overall format of the dimension with the ability to use Minecraft text formatting such as underlining, bold and italic fonts.
+By modifying the config file, you can change the colour* of the text on a per-dimension basis, allow showing the dimension in chat messages and change the overall format of the dimension with the ability to use Minecraft text formatting such as underlining, bold and italic fonts.
 
 The config file is located in `[world name]/serverconfig/dimensionviewer-server.toml`. Any changes made will be applied as soon as the config file is saved.
 
@@ -18,17 +18,22 @@ If there are any issues encountered (no dimension being shown for a player) eith
 
 <img src="img/DimensionViewerCompatibility.png" width="100%">
 
-## To-Do
-- [ ] Custom Mod Configuration
-  - [x] Override colour for modded dimensions.
-  - [ ] A way to replace the default modid with another name.
-- [ ] Figure out some irregularities with large mod packs.
+## Features
+### New in 1.3
+Modded dimensions are now able to be coloured independently.
+<img src="img/ModdedDimensionColor.png">
 
+### New in 1.4
+Dimension names can now be aliased to something else, allowing you to modify the name displayed per dimension.
+<img src="img/DimensionAliasing.png">
+
+
+## To-Do
+- [ ] Implement custom font colors. (Possible but will take some re-architecting)
 
 *Only default Minecraft text colours are currently available. <br>
-**Only colours for vanilla dimensions can be customized individually at the moment.
 
-<a href="https://www.curseforge.com/minecraft/mc-mods/dimension-viewer">![CurseForge Link](https://cf.way2muchnoise.eu/title/dimension-viewer(989AFF).svg?badge_style=for_the_badge)</a>
-![CurseForge Versions](https://cf.way2muchnoise.eu/versions/dimension-viewer_all(989AFF).svg?badge_style=for_the_badge)
+<a href="https://www.curseforge.com/minecraft/mc-mods/dimension-viewer">![CurseForge Link](https://cf.way2muchnoise.eu/title/857799(989AFF).svg?badge_style=for_the_badge)</a>
+![CurseForge Versions](https://cf.way2muchnoise.eu/versions/857799_all(989AFF).svg?badge_style=for_the_badge)
 
 <a href="https://modrinth.com/mod/dimension-viewer">![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/3aeFezQk?label=Modrinth&logo=Modrinth&style=for-the-badge)</a>

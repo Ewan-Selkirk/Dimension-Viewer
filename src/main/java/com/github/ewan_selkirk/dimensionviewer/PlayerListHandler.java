@@ -49,7 +49,7 @@ public class PlayerListHandler {
         }
 
         try {
-            event.setDisplayName(event.getEntity().getDisplayName().copy().append(replaceTokens(event)));
+            event.setDisplayName(Component.empty().append(replaceTokens(event)));
         } catch (NullPointerException e) {
 
         }
@@ -61,7 +61,7 @@ public class PlayerListHandler {
         if (!Config.DIM_IN_CHAT_NAME.get()) return;
 
         try {
-            MutableComponent name = event.getDisplayname().copy();
+            MutableComponent name = Component.empty();
             name.append(replaceTokens(event));
 
             if (!Config.CHAT_DIM_HOVER.get()) {
@@ -157,6 +157,10 @@ public class PlayerListHandler {
         String dimension = getDimension(event);
         tokens.put("%d", dimension);
 
+        // Get player name and add it to the list of tokens
+        String name = event.getEntity().getName().getString();
+        tokens.put("%p", name);
+
         for (var s: tokens.keySet()) {
             format = format.replace(s, tokens.get(s));
         }
@@ -217,6 +221,16 @@ public class PlayerListHandler {
      * @return The dimension as a Title-case string.
      */
     private static String getDimension(PlayerEvent event) {
+
+        // Check if there is a custom alias for the dimension
+        if (Config.ENABLE_ALIASES.get()) {
+            for (int i = 0; i < Config.DIMENSION_ALIASES.get().size(); i++) {
+                if (Config.DIMENSION_ALIASES.get().get(i).contains(players.get(event.getEntity().getStringUUID()).toString())) {
+                    return Config.DIMENSION_ALIASES.get().get(i).split(" ", 2)[1];
+                }
+            }
+        }
+
         return makeTitleCase(splitResourceLocation(players.get(event.getEntity().getStringUUID()), 1));
     }
 
