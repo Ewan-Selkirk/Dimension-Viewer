@@ -10,7 +10,9 @@ import java.util.List;
 public class ConfigForge {
 
     private static final String modidRegex = "([a-z_]+:[a-z_]+)";
-    private static final String allowedColorsString = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK";
+    private static final String allowedColorsString = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN," +
+            " AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK" +
+            "\nOr any custom colours defined in `customColors`";
 
     private static final List<String> moddedDimensionList = new ArrayList<>();
     private static final List<String> dimensionAliases = new ArrayList<>();
@@ -48,8 +50,9 @@ public class ConfigForge {
 
     private static void CategoryCustomization() {
         LIST_FORMAT = BUILDER.comment("Format that will be used to display the dimension in the tab list with the use of tokens:",
-                        "    %d - Dimension Name", "    %i - Italic font", "    %b - Bold font",
-                        "    %u - Underline font", "    %o - Obfuscated font", "    %s - Strikethrough font")
+                        "    %d - Dimension Name*", "    %i - Italic font", "    %b - Bold font",
+                        "    %u - Underline font", "    %o - Obfuscated font", "    %s - Strikethrough font" +
+                        "\n*Required (well, not technically, but it defeats the purpose without it!)")
                 .define("listFormat", "%i<%d>");
         DIM_POSITION = BUILDER.comment("Whether the dimension should be placed before or after the player name")
                 .defineEnum("dimensionPosition", CommonUtils.DimensionPosition.APPEND);
@@ -92,8 +95,8 @@ public class ConfigForge {
         DIM_IN_CHAT_NAME = BUILDER.comment("Should a users' current dimension be added to chat messages?")
                 .define("dimInChatName", true);
 
-        CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display which mod added the dimension",
-                        "Requires 'dimInChatName' to be set to true")
+        CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display the source of a dimension",
+                        "Requires `dimInChatName` to be set to true")
                 .define("chatDimHover", true);
 
         BUILDER.pop();
@@ -107,7 +110,7 @@ public class ConfigForge {
                 "\nWill throw an exception if the color is not valid" +
                 allowedColorsString
         ).defineListAllowEmpty(
-                List.of("moddedDimensionIds"),
+                List.of("moddedDimensions"),
                 () -> moddedDimensionList,
                 (item) -> (item instanceof String i && i.matches(modidRegex + " ([A-Z_]+)")
 //                                && (FontColor.contains(i.split(" ")[1]))
@@ -116,7 +119,8 @@ public class ConfigForge {
 
         DIM_ALIASES = BUILDER.comment("A list of aliases to use instead of the original dimension ID." +
                 "\nUses the format 'modid:dim_id New Name'." +
-                "\nFor example, to replace 'Overworld' with 'Grasslands' you would use 'minecraft:overworld Grasslands'"
+                "\nFor example, to replace 'Overworld' with 'Grasslands' you would use 'minecraft:overworld Grasslands'" +
+                "\nAliases support the same tokens as `listFormat`, allowing you to make a specific dimension bold or italic or both!"
         ).defineListAllowEmpty(
                 List.of("dimensionAliases"),
                 () -> dimensionAliases,
@@ -134,7 +138,7 @@ public class ConfigForge {
                 "\nIf a custom color of the same name already exists the server will reject the newest one." +
                 "\nThe name must be uppercase and can only contain letters and underscores."
         ).defineListAllowEmpty(
-                List.of("custom_colors"),
+                List.of("customColors"),
                 () -> customColourList,
                 (item) -> (item instanceof String i
                         && i.matches("[A-Z_]+ (#(?:[0-9a-fA-F]{3}){1,2}|(?:[rh][0-9]{1,3} [gs][0-9]{1,3} [bv][0-9]{1,3}[ ]?))")

@@ -1,16 +1,71 @@
 # Dimension Viewer
-A highly customizable server-side Minecraft Forge mod for viewing what dimension players are currently in.
+A highly customizable server-side Minecraft mod for viewing what dimension players are currently in.
 > Now supporting Fabric, Forge & NeoForge!
+> 
+> Fabric version requires Fabric API ([CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) or [Modrinth](https://modrinth.com/mod/fabric-api)) 
 
 ## Configuration
 By modifying the config file, you can change the colour* of the text on a per-dimension basis, allow showing the dimension in chat messages and change the overall format of the dimension with the ability to use Minecraft text formatting such as underlining, bold and italic fonts.
 
-The config file is located in `[Server Folder]/config/dimensionviewer-common.toml` for (Neo)Forge or `[Server Folder]/config/dimensionviewer.json` for Fabric. Any changes made will be applied as soon as the config file is saved.
+The config file is located in `[Server Folder]/config/dimensionviewer-common.toml` for (Neo)Forge or `[Server Folder]/config/dimensionviewer.json` for Fabric. 
+
+Any changes made will be applied as soon as the config file is saved.
 See below for an example config:
 
-
 <details>
-<summary>Example Configurations</summary>
+<summary>Example Configurations & Settings</summary>
+
+### Settings and What They Do
+___
+- `listFormat` - String
+  - The format that will be used to display the dimension in the player list or chat name. It supports a few tokens to tweak the layout.
+    - `%d` - Dimension (required)
+    - `%i` - Italic
+    - `%b` - Bold
+    - `%u` - Underlined
+    - `%s` - Strikethrough
+    - `%o` - Obfuscate text
+    - `%%` - Literal %
+  - Any character following a `%` will be interpreted as a token and removed, so use `%%` if you want a percentage sign in the name
+- `dimensionPosition` - String
+  - Sets the position the dimension is shown in relation to the players name.
+    - `PREPEND` - Before the player name
+    - `APPEND` - After the player name
+- `defaultColor` - String
+  - Sets the default font colour to use if `PER_DIM_COLOR` is false or is a custom dimension that is not defined in `MODDED_DIMS`
+    - Accepts any vanilla text colour: `DARK_RED`, `RED`, `GOLD`, `YELLOW`, `DARK_GREEN`, `GREEN`, `AQUA`, `DARK_AQUA`, `DARK_BLUE`, `BLUE`, `LIGHT_PURPLE`, `DARK_PURPLE`, `WHITE`, `GRAY`, `DARK_GRAY`, `BLACK`
+    - Also accepts the name of any custom colours defined in `CUSTOM_COLORS`
+    - The names must be UPPERCASE
+- `overworldColor`, `netherColor` & `endColor` - String
+  - Used to change the colors of vanilla dimensions when `perDimColor` is set to `true`
+  - Accepts the same inputs as `defaultColor`
+- `perDimColor` - Boolean
+  - Used to enable individual dimension colouring. Disabling this will display all dimensions the same colour as defined in `DEFAULT_COLOR`
+- `dimInChatName` - Boolean
+  - Used to toggle showing the dimension in a players name when sending chat messages
+  - When turned off, the players chat name will be unaffected and only the tab list name will show the players current dimension
+- `enableAliases` - Boolean
+  - Used to toggle whether custom dimension names should be used.
+  - When enabled, any dimensions that match items in `DIM_ALIASES` will have their display names swapped for the aliased name.
+- `moddedDimensions` - Array of Strings
+  - Used to change the colors of custom modded dimensions
+  - Uses the format `modid:dim_id color`
+  - For example, Twilight Forest in Gold would be `twilightforest:twilight_forest GOLD`
+- `dimensionAliases` - Array of Strings
+  - Used to show a custom name for a given dimension
+  - Uses the format `modid:dim_id New Name` (Spaces allowed)
+  - For example, to replace `Overworld` with `The Grasslands` you would use `minecraft:overworld The Grasslands`
+  - Has no effect if `ENABLE_ALIASES` is false
+  - [VERSION 2.0.0+] Allows the use of tokens in the alias (see `listFormat`)
+    - Make only the overworld text bold with `minecraft:overworld %b%d`
+- `customColors` [VERSION 2.0.0+] - Array of Strings
+  - Used to define custom font colors in either HEX format or RGB format.
+  - Uses the format `COLOR_NAME #HEX` for hexadecimal colours or `COLOR_NAME r000 g000 b000` for RGB colors.
+    - The name of the color must be UPPERCASE
+    - Hexadecimal numbers must be 6 characters long. Truncated hex values and hex w/ alpha values are not supported at this moment.
+  - For example, a custom pink hex color would be `HOT_PINK #C62F75`
+  - Another example, a custom purple RGB color would be `FUTURE_PURPLE r152 g154 b255`
+
 <details>
 <summary>(Neo)Forge Example</summary>
 
@@ -83,77 +138,26 @@ perDimColor = true
 <details>
 <summary>Fabric Configuration</summary>
 
-The Fabric configuration is stored and laid out differently to the (Neo)Forge configuration file due to having to write the saving and loading functions manually. Everything is the same in terms of settings, but there are no comments as JSON doesn't support comments.
-This is something that I would like to fix in the future but for now it works.
+The Fabric configuration is stored and laid out differently to the (Neo)Forge configuration file due to having to write the saving and loading functions manually. Everything is the same in terms of settings, but there are no comments, unfortunately.
+This is something that I will try to change in the future.
 
 ```json
 {
-  "LIST_FORMAT": "%i<%d>",
-  "DIM_POSITION": "APPEND",
-  "DEFAULT_COLOR": "HOT_PINK",
-  "OVERWORLD_COLOR": "DARK_GREEN",
-  "NETHER_COLOR": "FUTURE_PURPLE",
-  "END_COLOR": "HOT_PINK",
-  "PER_DIM_COLOR": true,
-  "DIM_IN_CHAT_NAME": true,
-  "CHAT_DIM_HOVER": true,
-  "ENABLE_ALIASES": true,
-  "MODDED_DIMS": ["twilightforest:twilight_forest GOLD"],
-  "DIM_ALIASES": ["minecraft:overworld %bThe Grasslands", "minecraft:the_nether %u%d", "minecraft:the_end %oEnd"],
-  "CUSTOM_COLORS": ["HOT_PINK #C62F75", "FUTURE_PURPLE r152 g154 b255"]
+  "listFormat": "%i<%d>",
+  "dimensionPosition": "APPEND",
+  "defaultColor": "HOT_PINK",
+  "overworldColor": "DARK_GREEN",
+  "netherColor": "FUTURE_PURPLE",
+  "endColor": "HOT_PINK",
+  "perDimColor": true,
+  "dimInChatName": true,
+  "chatDimHover": true,
+  "enableAliases": true,
+  "moddedDimensions": ["twilightforest:twilight_forest GOLD"],
+  "dimensionAliases": ["minecraft:overworld %bThe Grasslands", "minecraft:the_nether %u%d", "minecraft:the_end %oEnd"],
+  "customColors": ["HOT_PINK #C62F75", "FUTURE_PURPLE r152 g154 b255"]
 }
 ```
-
-### Settings and What They Do
-___
-- `LIST_FORMAT`
-  - The format that will be used to display the dimension in the player list or chat name. It supports a few tokens to tweak the layout.
-    - `%d` - Dimension (required) 
-    - `%i` - Italic
-    - `%b` - Bold
-    - `%u` - Underlined
-    - `%s` - Strikethrough
-    - `%o` - Obfuscate text
-    - `%%` - Literal %
-  - Any character following a `%` will be interpreted as a token and removed, so use `%%` if you want a percentage sign in the name
-- `DIM_POSITION`
-  - Sets the position the dimension is shown in relation to the players name.
-    - `PREPEND` - Before the player name
-    - `APPEND` - After the player name
-- `DEFAULT_COLOR`
-  - Sets the default font colour to use if `PER_DIM_COLOR` is false or is a custom dimension that is not defined in `MODDED_DIMS`
-    - Accepts any vanilla text colour: `DARK_RED`, `RED`, `GOLD`, `YELLOW`, `DARK_GREEN`, `GREEN`, `AQUA`, `DARK_AQUA`, `DARK_BLUE`, `BLUE`, `LIGHT_PURPLE`, `DARK_PURPLE`, `WHITE`, `GRAY`, `DARK_GRAY`, `BLACK`
-    - Also accepts the name of any custom colours defined in `CUSTOM_COLORS`
-    - The names must be UPPERCASE
-- `OVERWORLD_COLOR`, `NETHER_COLOR` & `END_COLOR`
-  - Used to change the colors of vanilla dimensions when `PER_DIM_COLOR` is set to `true`
-  - Accepts the same inputs as `DEFAULT_COLOR`
-- `PER_DIM_COLOR`
-  - Used to enable individual dimension colouring. Disabling this will display all dimensions the same colour as defined in `DEFAULT_COLOR`
-- `DIM_IN_CHAT_NAME`
-  - Used to toggle showing the dimension in a players name when sending chat messages
-  - When turned off, the players chat name will be unaffected and only the tab list name will show the players current dimension
-- `ENABLE_ALIASES`
-  - Used to toggle whether custom dimension names should be used.
-  - When enabled, any dimensions that match items in `DIM_ALIASES` will have their display names swapped for the aliased name.
-- `MODDED_DIMS`
-  - Used to change the colors of custom modded dimensions
-  - Uses the format `modid:dim_id color`
-  - For example, Twilight Forest in Gold would be `twilightforest:twilight_forest GOLD`
-- `DIM_ALIASES`
-  - Used to show a custom name for a given dimension
-  - Uses the format `modid:dim_id New Name` (Spaces allowed)
-  - For example, to replace `Overworld` with `The Grasslands` you would use `minecraft:overworld The Grasslands`
-  - Has no effect if `ENABLE_ALIASES` is false
-  - [VERSION 2.0.0+] Allows the use of tokens in the alias
-    - Make only the overworld text bold with `minecraft:overworld %b%d`
-- `CUSTOM_COLORS`
-  - Used to define custom font colors in either HEX format or RGB format.
-  - Uses the format `COLOR_NAME #HEX` for hexadecimal colours or `COLOR_NAME r000 g000 b000` for RGB colors.
-    - The name of the color must be UPPERCASE 
-    - Hexadecimal numbers must be 6 characters long. Truncated hex values and hex w/ alpha values are not supported at this moment.
-  - For example, a custom pink hex color would be `HOT_PINK #C62F75`
-  - Another example, a custom purple RGB color would be `FUTURE_PURPLE r152 g154 b255`
 
 </details>
 </details>
@@ -189,6 +193,7 @@ ____
             <li>Now supports Fabric!</li>
             <li>Now supports custom RGB and Hex font colours!</li>
             <li>Simplified the format configuration</li>
+            <li>Dimension aliases now support tokens, allowing specific dimensions to be bold or italic, or both!</li>
         </ul>
     </details>
     <details>
