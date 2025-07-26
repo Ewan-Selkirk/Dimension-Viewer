@@ -1,6 +1,7 @@
 package dev.stick_stack.dimensionviewer;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -13,9 +14,7 @@ public class DimensionViewerFabric implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        ServerLifecycleEvents.SERVER_STARTED.register((server -> {
-            ConfigFabric.get();
-        }));
+        ServerLifecycleEvents.SERVER_STARTED.register((server -> ConfigFabric.get()));
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) ->
                 PlayerListHandler.playerList.add(handler.getPlayer())
@@ -32,5 +31,7 @@ public class DimensionViewerFabric implements DedicatedServerModInitializer {
             EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME);
             playerList.broadcastAll(new ClientboundPlayerInfoUpdatePacket(actions, playerList.getPlayers()));
         });
+
+        CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> CustomCommands.RegisterCommands(dispatcher)));
     }
 }

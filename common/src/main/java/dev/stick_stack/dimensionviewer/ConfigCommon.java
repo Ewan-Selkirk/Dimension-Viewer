@@ -1,89 +1,26 @@
 package dev.stick_stack.dimensionviewer;
 
-import com.google.common.base.Supplier;
 import net.minecraft.ChatFormatting;
 
-import java.util.List;
+import java.util.Locale;
 
-public class ConfigCommon implements IConfig {
+public class ConfigCommon {
 
-    protected static IConfig INSTANCE;
+    public static final String modidRegex = "([a-z_]+:[a-z0-9_/-]+)";
+    public static final String allowedColorsComment = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, " +
+            "AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK" +
+            "\nOr any custom colours defined in `customColors`";
 
-    public ConfigCommon() {
-//        loadConfig();
-        Constants.LOG.info("Config initialized! {}", INSTANCE);
+    public static String DEFAULT_LIST_FORMAT = "%i<%d>";
 
-        INSTANCE = this;
-    }
+    public static String DEFAULT_COLOR = ChatFormatting.GOLD.getName().toUpperCase(Locale.ROOT);
+    public static String OVERWORLD_COLOR = ChatFormatting.DARK_GREEN.getName().toUpperCase(Locale.ROOT);
+    public static String NETHER_COLOR = ChatFormatting.DARK_RED.getName().toUpperCase(Locale.ROOT);
+    public static String END_COLOR = ChatFormatting.DARK_PURPLE.getName().toUpperCase(Locale.ROOT);
 
-    /*@Override
-    public IConfig getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = loadConfig();
-        }
-
-        return INSTANCE;
-    }*/
-
-    @Override
-    public void saveConfig() {
-
-    }
-
-    @Override
-    public IConfig loadConfig() {
-        Constants.LOG.error("PLEASE OVERRIDE THE LOAD CONFIG IMPLEMENTATION THANKS!");
-        return null;
-    }
-
-    /*public enum FontColor {
-        DARK_RED("§4"),
-        RED("§c"),
-        GOLD("§6"),
-        YELLOW("§e"),
-        DARK_GREEN("§2"),
-        GREEN("§a"),
-        AQUA("§b"),
-        DARK_AQUA("§3"),
-        DARK_BLUE("§1"),
-        BLUE("§9"),
-        LIGHT_PURPLE("§d"),
-        DARK_PURPLE("§5"),
-        WHITE("§f"),
-        GRAY("§7"),
-        DARK_GRAY("§8"),
-        BLACK("§0");
-
-        public final String value;
-
-        FontColor(String value) {
-            this.value = value;
-        }
-
-        public static boolean contains(String value) {
-            for (FontColor color : FontColor.values()) {
-                if (color.name().equals(value)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }*/
-
-    public static Supplier<String> LIST_FORMAT = () -> "%p %c<%d>%r";
-
-    public static Supplier<String> DEFAULT_COLOR = ChatFormatting.GOLD::toString;
-    public static Supplier<String> OVERWORLD_COLOR = ChatFormatting.DARK_GREEN::toString;
-    public static Supplier<String> NETHER_COLOR = ChatFormatting.DARK_RED::toString;
-    public static Supplier<String> END_COLOR = ChatFormatting.DARK_PURPLE::toString;
-
-    public static Supplier<Boolean> PER_DIM_COLOR = () -> true;
-    public static Supplier<Boolean> DIM_IN_CHAT_NAME = () -> true;
-    public static Supplier<Boolean> CHAT_DIM_HOVER = () -> true;
-    public static Supplier<Boolean> ENABLE_ALIASES = () -> true;
-
-    public static Supplier<List<? extends String>> MODDED_DIMS;
-    public static Supplier<List<? extends String>> DIM_ALIASES;
+    public static boolean PER_DIM_COLOR = true;
+    public static boolean DIM_IN_CHAT_NAME = true;
+    public static boolean CHAT_DIM_HOVER = true;
+    public static boolean ENABLE_ALIASES = true;
 
 }

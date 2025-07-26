@@ -16,6 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class DimensionViewerNeoForge {
 
         private static Component createDimensionComponent(PlayerEvent event, MutableComponent originalName) {
             ResourceLocation dimension = event.getEntity().level().dimension().location();
-            String dimSource = CommonUtils.ToTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
+            String dimSource = CommonUtils.dimensionToString(dimension);
             final PlayerListHandlerNeoForge handler = new PlayerListHandlerNeoForge();
 
             Style style = Style.EMPTY;
@@ -146,6 +147,14 @@ public class DimensionViewerNeoForge {
                 MutableComponent originalName = event.getEntity().getDisplayName().copy();
                 event.setDisplayName(createDimensionComponent(event, originalName));
             }
+        }
+    }
+
+    @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+    private static class ModEventBus {
+        @SubscribeEvent
+        public static void registerCommands(RegisterCommandsEvent event) {
+            CustomCommands.RegisterCommands(event.getDispatcher());
         }
     }
 

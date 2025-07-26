@@ -1,6 +1,8 @@
 package dev.stick_stack.dimensionviewer;
 
+import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -10,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint;
@@ -69,7 +72,7 @@ public class DimensionViewerForge {
 
         private static Component createDimensionComponent(PlayerEvent event, MutableComponent originalName) {
             ResourceLocation dimension = event.getEntity().level().dimension().location();
-            String dimSource = CommonUtils.ToTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
+            String dimSource = CommonUtils.dimensionToString(dimension);
             final PlayerListHandlerForge handler = new PlayerListHandlerForge();
 
             Style style = Style.EMPTY;
@@ -112,6 +115,11 @@ public class DimensionViewerForge {
                 spacer.append(dimComponent);
                 return originalName.append(spacer);
             }
+        }
+
+        @SubscribeEvent
+        public static void registerCommands(RegisterCommandsEvent event) {
+            CustomCommands.RegisterCommands(event.getDispatcher());
         }
 
         @SubscribeEvent

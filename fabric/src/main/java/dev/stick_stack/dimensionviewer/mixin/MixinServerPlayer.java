@@ -31,7 +31,7 @@ public abstract class MixinServerPlayer extends MixinPlayer {
     @Unique
     private static Component createDimensionComponent(ServerPlayer player, MutableComponent originalName) {
         ResourceLocation dimension = player.level().dimension().location();
-        String dimSource = CommonUtils.ToTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
+        String dimSource = CommonUtils.dimensionToString(dimension);
         final PlayerListHandlerFabric handler = new PlayerListHandlerFabric();
 
         Style style = Style.EMPTY;

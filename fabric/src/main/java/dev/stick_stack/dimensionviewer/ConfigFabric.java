@@ -1,13 +1,18 @@
 package dev.stick_stack.dimensionviewer;
 
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.include.com.google.gson.Gson;
 import org.spongepowered.include.com.google.gson.GsonBuilder;
 import org.spongepowered.include.com.google.gson.annotations.Expose;
 import org.spongepowered.include.com.google.gson.annotations.SerializedName;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConfigFabric {
@@ -18,7 +23,7 @@ public class ConfigFabric {
 
     @Expose
     @SerializedName("listFormat")
-    public String LIST_FORMAT = "%i<%d>";
+    public String LIST_FORMAT = ConfigCommon.DEFAULT_LIST_FORMAT;
 
     @Expose
     @SerializedName("dimensionPosition")
@@ -26,35 +31,35 @@ public class ConfigFabric {
 
     @Expose
     @SerializedName("defaultColor")
-    public String DEFAULT_COLOR = "DARK_AQUA";
+    public String DEFAULT_COLOR = ConfigCommon.DEFAULT_COLOR;
 
     @Expose
     @SerializedName("overworldColor")
-    public String OVERWORLD_COLOR = "DARK_GREEN";
+    public String OVERWORLD_COLOR = ConfigCommon.OVERWORLD_COLOR;
 
     @Expose
     @SerializedName("netherColor")
-    public String NETHER_COLOR = "DARK_RED";
+    public String NETHER_COLOR = ConfigCommon.NETHER_COLOR;
 
     @Expose
     @SerializedName("endColor")
-    public String END_COLOR = "DARK_PURPLE";
+    public String END_COLOR = ConfigCommon.END_COLOR;
 
     @Expose
     @SerializedName("perDimColor")
-    public boolean PER_DIM_COLOR = true;
+    public boolean PER_DIM_COLOR = ConfigCommon.PER_DIM_COLOR;
 
     @Expose
     @SerializedName("dimInChatName")
-    public boolean DIM_IN_CHAT_NAME = true;
+    public boolean DIM_IN_CHAT_NAME = ConfigCommon.DIM_IN_CHAT_NAME;
 
     @Expose
     @SerializedName("chatDimHover")
-    public boolean CHAT_DIM_HOVER = true;
+    public boolean CHAT_DIM_HOVER = ConfigCommon.CHAT_DIM_HOVER;
 
     @Expose
     @SerializedName("enableAliases")
-    public boolean ENABLE_ALIASES = true;
+    public boolean ENABLE_ALIASES = ConfigCommon.ENABLE_ALIASES;
 
     @Expose
     @SerializedName("moddedDimensions")
@@ -68,6 +73,7 @@ public class ConfigFabric {
     @SerializedName("customColors")
     public List<String> CUSTOM_COLORS = new ArrayList<>();
 
+    @NotNull
     public static ConfigFabric get() {
         if (INSTANCE == null) {
             loadConfig();
@@ -144,6 +150,7 @@ public class ConfigFabric {
 
         Thread thread = new Thread(() -> {
             try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+                String checksum = "";
                 Path configDir = getConfigFile().getParentFile().toPath();
                 configDir.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 
@@ -153,25 +160,42 @@ public class ConfigFabric {
                     for (WatchEvent<?> event : key.pollEvents()) {
                         WatchEvent.Kind<?> kind = event.kind();
 
+                        if (kind == StandardWatchEventKinds.OVERFLOW) {
+                            continue;
+                        }
+
                         if (kind == StandardWatchEventKinds.ENTRY_MODIFY) {
-                            Path changed = (Path) event.context();
-                            if (changed.toString().endsWith(Constants.MOD_ID + ".json")) {
-                                Constants.LOG.info("Dimension Viewer config file changed! Updating player info...");
-                                loadConfig();
+                            /*try {*/
+                                Path changed = (Path) event.context();
+                                if (changed.toString().endsWith(Constants.MOD_ID + ".json")) {
+                                    Path config = Path.of("config", changed.toString());
 
-                                // Uncomment the line below to print the values of the new config after reloading
-                                //Constants.LOG.info(INSTANCE.toString());
+                                    assert checksum != null;
+                                    if (checksum.equals(FabricUtils.generateMd5Hash(config))) {
+//                                        Constants.LOG.info("Tried to reload config but checksum was the same!");
+                                        break;
+                                    }
 
-                                if (!PlayerListHandler.playerList.isEmpty()) {
-                                    FabricUtils.refreshDisplayNames(
-                                            PlayerListHandler.playerList.get(0).getServer().getPlayerList()
-                                    );
-                                } else {
-                                    Constants.LOG.info("Skipping display name refresh as no players are detected on the server");
+                                    // Set Checksum
+                                    checksum = FabricUtils.generateMd5Hash(config);
+
+                                    Constants.LOG.info("Dimension Viewer config file changed! Updating player info...");
+                                    loadConfig();
+
+                                    if (!PlayerListHandler.playerList.isEmpty()) {
+                                        FabricUtils.refreshDisplayNames(
+                                                PlayerListHandler.playerList.getFirst().getServer().getPlayerList()
+                                        );
+                                    } else {
+                                        Constants.LOG.info("Skipping display name refresh as no players are detected on the server");
+                                    }
+
+                                    break;
                                 }
-
+                            /*} catch (NullPointerException exception) {
+                                Constants.LOG.error(exception.getMessage());
                                 break;
-                            }
+                            }*/
                         }
                     }
 
@@ -180,7 +204,7 @@ public class ConfigFabric {
                         break;
                     }
                 }
-            } catch (IOException | InterruptedException exception) {
+            } catch (IOException | InterruptedException | NullPointerException exception) {
                 Constants.LOG.error(exception.getMessage());
             }
         });

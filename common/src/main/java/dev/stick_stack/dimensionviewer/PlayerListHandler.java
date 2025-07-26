@@ -1,5 +1,6 @@
 package dev.stick_stack.dimensionviewer;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.PlainTextContents;
@@ -21,23 +22,50 @@ public abstract class PlayerListHandler {
     }
 
     private MutableComponent extractTokensFromFormat(String format, ResourceLocation dimension) {
+        MutableComponent component = MutableComponent.create(PlainTextContents.EMPTY);
+
         // Check the list format for tokens, then remove any tokens from the string
-        Style style = checkTokens(null, format);
+//        Style style = checkTokens(null, format);
         format = replaceTokens(format);
 
         // Replace tokens in the aliased dimension name
         String aliasedDim = checkForAliases(dimension.toString());
-        style = checkTokens(style, aliasedDim);
-        aliasedDim = replaceTokens(aliasedDim);
+
+        component.append(format.split("%d")[0]);
 
         // The alias can use the `%d` token, allowing the original name to be used
-        aliasedDim = aliasedDim.replace("%d", CommonUtils.ToTitleCase(
-                CommonUtils.splitResourceLocation(dimension, 1)
-        ));
+        aliasedDim = aliasedDim.replace("%d", CommonUtils.dimensionToString(dimension));
+
+        // Try to split up the string so that applying an obfuscate to part of the string won't cause the whole string
+        // to be obfuscated. Temp solution in this form
+        // TODO: Fix Token Splitting
+        var tempStyle = Style.EMPTY;
+        int i = 0;
+        for (var word : aliasedDim.split(" ")) {
+            tempStyle = checkTokens(tempStyle, word);
+            component.append(Component.literal(replaceTokens(word)).withStyle(tempStyle));
+
+            if (i < aliasedDim.split(" ").length - 1) {
+                component.append(" ");
+            }
+
+            if (word.endsWith("%r")) {
+                tempStyle = Style.EMPTY;
+            }
+
+            i++;
+        }
+
+        component.append(format.split("%d")[1]);
+
+//        style = checkTokens(style, aliasedDim);
+//        aliasedDim = replaceTokens(aliasedDim);
 
         // Finally, replace the dimension placeholder with the actual dimension name.
-        format = format.replace("%d", aliasedDim);
-        return MutableComponent.create(new PlainTextContents.LiteralContents(format)).withStyle(style);
+//        format = format.replace("%d", aliasedDim);
+//        return MutableComponent.create(new PlainTextContents.LiteralContents(format)).withStyle(style);
+
+        return component;
     }
 
 
@@ -48,6 +76,11 @@ public abstract class PlayerListHandler {
      * @return A Style with the appropriate settings applied
      */
     private Style checkTokens(@Nullable Style inStyle, String inString) {
+        if (inString.startsWith("%r")) {
+            return checkTokens(Style.EMPTY, inString.substring(2));
+        }
+
+
         inStyle = inStyle == null ? Style.EMPTY : inStyle;
 
         boolean useItalic = inString.contains("%i");

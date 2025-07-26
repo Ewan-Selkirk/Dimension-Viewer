@@ -12,7 +12,7 @@ public class PlayerListHandlerForge extends PlayerListHandler {
             }
         }
 
-        return CommonUtils.ToTitleCase(CommonUtils.splitResourceLocation(dimensionResourceLocation, 1));
+        return CommonUtils.dimensionToString(dimensionResourceLocation);
     }
 
 }

@@ -9,10 +9,11 @@ import java.util.List;
 @Mod.EventBusSubscriber
 public class ConfigForge {
 
-    private static final String modidRegex = "([a-z_]+:[a-z_]+)";
-    private static final String allowedColorsString = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN," +
-            " AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK" +
-            "\nOr any custom colours defined in `customColors`";
+    public static String BASE_DEFAULT_COLOR = "DARK_AQUA";
+    public static String BASE_OVERWORLD_COLOR = "DARK_GREEN";
+    public static String BASE_NETHER_COLOR = "DARK_RED";
+    public static String BASE_END_COLOR = "DARK_PURPLE";
+    public static String BASE_LIST_FORMAT = "%i<%d>";
 
     private static final List<String> moddedDimensionList = new ArrayList<>();
     private static final List<String> dimensionAliases = new ArrayList<>();
@@ -53,12 +54,12 @@ public class ConfigForge {
                         "    %d - Dimension Name*", "    %i - Italic font", "    %b - Bold font",
                         "    %u - Underline font", "    %o - Obfuscated font", "    %s - Strikethrough font" +
                         "\n*Required (well, not technically, but it defeats the purpose without it!)")
-                .define("listFormat", "%i<%d>");
+                .define("listFormat", BASE_LIST_FORMAT);
         DIM_POSITION = BUILDER.comment("Whether the dimension should be placed before or after the player name")
                 .defineEnum("dimensionPosition", CommonUtils.DimensionPosition.APPEND);
         DEFAULT_COLOR = BUILDER.comment("The color to use for the dimension font if perDimColorPath is false.",
                         "(In the event of a modded dimension being entered, this color will be used as a fallback)")
-                .define("fontColor", "DARK_AQUA");
+                .define("fontColor", BASE_DEFAULT_COLOR);
         PER_DIM_COLOR = BUILDER.comment("Should each dimension have its own color?")
                 .define("perDimColor", true);
         ENABLE_ALIASES = BUILDER.comment("Global toggle for dimension aliases. Requires aliases to be set below.")
@@ -77,14 +78,14 @@ public class ConfigForge {
         BUILDER.comment("Per-Dimension Customization").push("dimension");
 
         OVERWORLD_COLOR = BUILDER.comment("Color to use for the Overworld" +
-                        allowedColorsString)
-                .define("overworldColor", "DARK_GREEN");
+                        ConfigCommon.allowedColorsComment)
+                .define("overworldColor", BASE_OVERWORLD_COLOR);
         NETHER_COLOR = BUILDER.comment("Color to use for the Nether" +
-                        allowedColorsString)
-                .define("netherColor", "DARK_RED");
+                        ConfigCommon.allowedColorsComment)
+                .define("netherColor", BASE_NETHER_COLOR);
         END_COLOR = BUILDER.comment("Color to use for the End" +
-                        allowedColorsString)
-                .define("endColor", "DARK_PURPLE");
+                        ConfigCommon.allowedColorsComment)
+                .define("endColor", BASE_END_COLOR);
 
         BUILDER.pop();
     }
@@ -108,11 +109,11 @@ public class ConfigForge {
         MODDED_DIMS = BUILDER.comment("A list of modded dimension resource IDs and a color in the format of \"modid:dim_id color\"" +
                 "\nFor example, Twilight Forest in Gold would be \"twilightforest:twilight_forest GOLD\"" +
                 "\nWill throw an exception if the color is not valid" +
-                allowedColorsString
+                ConfigCommon.allowedColorsComment
         ).defineListAllowEmpty(
                 List.of("moddedDimensions"),
                 () -> moddedDimensionList,
-                (item) -> (item instanceof String i && i.matches(modidRegex + " ([A-Z_]+)")
+                (item) -> (item instanceof String i && i.matches(ConfigCommon.modidRegex + " ([A-Z_]+)")
 //                                && (FontColor.contains(i.split(" ")[1]))
                 )
         );
@@ -124,7 +125,7 @@ public class ConfigForge {
         ).defineListAllowEmpty(
                 List.of("dimensionAliases"),
                 () -> dimensionAliases,
-                (item) -> (item instanceof String i && i.matches(modidRegex + " (.*)"))
+                (item) -> (item instanceof String i && i.matches(ConfigCommon.modidRegex + " (.*)"))
         );
 
         BUILDER.pop();

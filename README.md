@@ -1,8 +1,10 @@
 # Dimension Viewer
 A highly customizable server-side Minecraft mod for viewing what dimension players are currently in.
+<img src="img/DimensionViewer.png" width="100%" style="margin: 0px 1rem;">
 > Now supporting Fabric, Forge & NeoForge!
 > 
 > Fabric version requires Fabric API ([CurseForge](https://www.curseforge.com/minecraft/mc-mods/fabric-api) or [Modrinth](https://modrinth.com/mod/fabric-api)) 
+
 
 ## Configuration
 By modifying the config file, you can change the colour* of the text on a per-dimension basis, allow showing the dimension in chat messages and change the overall format of the dimension with the ability to use Minecraft text formatting such as underlining, bold and italic fonts.

@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public class CommonUtils {
 
-    public static enum DimensionPosition {
+    public enum DimensionPosition {
         PREPEND,
         APPEND
     }
@@ -17,7 +17,7 @@ public class CommonUtils {
      * @param inputString The string to make title case.
      * @return String in title case
      */
-    public static String ToTitleCase(String inputString) {
+    public static String toTitleCase(String inputString) {
         inputString = inputString.replace("_", " ");
 
         if (inputString.length() <= 2 || (inputString.startsWith(" ") || inputString.endsWith(" "))) {
@@ -42,17 +42,44 @@ public class CommonUtils {
     }
 
     /**
-     *
+     * Split a resource location and return
+     * @param key
+     * @param pos
+     * @return
      */
     public static String splitResourceLocation(ResourceLocation key, int pos) {
-        String txt = key.toString();
+        final String txt = key.toString();
 
 //        return txt.split(":")[pos];
         return splitResourceLocation(txt, pos);
     }
 
+    /**
+     * Split a resource location and return
+     * @param key
+     * @param pos
+     * @return
+     */
     public static String splitResourceLocation(String key, int pos) {
         return key.split(":")[pos];
+    }
+
+    /**
+     * Shorthand function for converting a dimension resource location into a correctly formatting String
+     * @param key The dimension resource location
+     * @return The dimension in title case formatting (E.G. "minecraft:the_nether" > "The Nether")
+     */
+    public static String dimensionToString(ResourceLocation key) {
+        return CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(key, 1));
+    }
+
+    /**
+     * Shorthand function for converting a dimension string into a correctly formatting String
+     * @param key The dimension string (E.G. "minecraft:the_nether")
+     * @return The dimension in title case formatting (E.G. "minecraft:the_nether" > "The Nether")
+     */
+    public static String dimensionToString(String key) {
+        return CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(key, 1));
     }
 
     // Stolen from StackOverflow
@@ -69,5 +96,17 @@ public class CommonUtils {
         int b = Integer.parseInt(hex.substring(5, 7), 16);
 
         return rgbToInt(r, g, b);
+    }
+
+    public static int customColorToInt(String[] value) {
+        if (value[1].startsWith("#")) {
+            return hexToInt(value[1]);
+        } else {
+            int r = Integer.parseInt(value[1].substring(1));
+            int g = Integer.parseInt(value[2].substring(1));
+            int b = Integer.parseInt(value[3].substring(1));
+
+            return rgbToInt(r, g, b);
+        }
     }
 }

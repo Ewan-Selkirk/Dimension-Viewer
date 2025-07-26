@@ -12,7 +12,7 @@ public class PlayerListHandlerFabric extends PlayerListHandler {
             }
         }
 
-        return CommonUtils.ToTitleCase(CommonUtils.splitResourceLocation(dimension, 1));
+        return CommonUtils.dimensionToString(dimension);
     }
     
 }
