@@ -177,8 +177,15 @@ Mods that make changes to the tab list name format (or even the regular display 
 Modded dimensions can now be coloured independently.
 <img src="img/ModdedDimensionColor.png">
 
+**New in version 1.4.0**
+
 Dimension names can now be aliased to something else, allowing you to modify the name displayed per dimension.
 <img src="img/DimensionAliasing.png">
+
+**New in version 2.1.0**
+
+Configure the mod without touching the config file with slash commands!
+<img src="img/SlashCommands.png">
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/dimension-viewer">![CurseForge Link](https://cf.way2muchnoise.eu/title/857799(989AFF).svg?badge_style=for_the_badge)</a>
 ![CurseForge Versions](https://cf.way2muchnoise.eu/versions/857799_all(989AFF).svg?badge_style=for_the_badge)
@@ -190,6 +197,14 @@ ____
 <details>
     <summary>View Changelog</summary>
     <details open>
+      <summary>Version 2.1.0</summary>
+      <ul>
+        <li>Added slash commands!</li>
+        <li>Most (if not all) settings can now be changed without going to the config file with slash commands!</li>
+        <li>Fixed an issue with certain modid</li>
+      </ul>
+    </details>
+    <details>
         <summary>Version 2.0.0</summary>
         <ul>
             <li>Now supports Fabric!</li>
