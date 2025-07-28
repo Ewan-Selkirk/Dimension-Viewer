@@ -31,7 +31,7 @@ public abstract class MixinServerPlayer extends MixinPlayer {
     @Unique
     private static Component createDimensionComponent(ServerPlayer player, MutableComponent originalName) {
         ResourceLocation dimension = player.level().dimension().location();
-        String dimSource = CommonUtils.dimensionToString(dimension);
+        String dimSource = CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
         final PlayerListHandlerFabric handler = new PlayerListHandlerFabric();
 
         Style style = Style.EMPTY;
@@ -62,7 +62,7 @@ public abstract class MixinServerPlayer extends MixinPlayer {
 
         if (ConfigFabric.get().CHAT_DIM_HOVER) {
             dimComponent.withStyle(dimComponent.getStyle().withHoverEvent(
-                    new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(dimSource))
+                    new HoverEvent.ShowText(Component.literal(dimSource))
             ));
         }
 

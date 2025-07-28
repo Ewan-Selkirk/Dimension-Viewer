@@ -1,8 +1,6 @@
 package dev.stick_stack.dimensionviewer;
 
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -16,23 +14,23 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import java.util.List;
 
 @Mod(Constants.MOD_ID)
 public class DimensionViewerForge {
 
-    public DimensionViewerForge() {
-        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () ->
+    public DimensionViewerForge(FMLJavaModLoadingContext context) {
+        context.registerExtensionPoint(IExtensionPoint.DisplayTest.class, () ->
                 new IExtensionPoint.DisplayTest(() ->
                         IExtensionPoint.DisplayTest.IGNORESERVERONLY, (a, b) -> true)
         );
 
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigForge.CONFIG);
+        context.registerConfig(ModConfig.Type.COMMON, ConfigForge.CONFIG);
     }
 
     @Mod.EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.DEDICATED_SERVER)
@@ -72,7 +70,7 @@ public class DimensionViewerForge {
 
         private static Component createDimensionComponent(PlayerEvent event, MutableComponent originalName) {
             ResourceLocation dimension = event.getEntity().level().dimension().location();
-            String dimSource = CommonUtils.dimensionToString(dimension);
+            String dimSource = CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
             final PlayerListHandlerForge handler = new PlayerListHandlerForge();
 
             Style style = Style.EMPTY;
@@ -103,7 +101,7 @@ public class DimensionViewerForge {
 
             if (ConfigForge.CHAT_DIM_HOVER.get()) {
                 dimComponent.withStyle(dimComponent.getStyle().withHoverEvent(
-                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(dimSource))
+                        new HoverEvent.ShowText(Component.literal(dimSource))
                 ));
             }
 

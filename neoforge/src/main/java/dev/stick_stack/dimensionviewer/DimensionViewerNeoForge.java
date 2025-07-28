@@ -65,7 +65,7 @@ public class DimensionViewerNeoForge {
 
         private static Component createDimensionComponent(PlayerEvent event, MutableComponent originalName) {
             ResourceLocation dimension = event.getEntity().level().dimension().location();
-            String dimSource = CommonUtils.dimensionToString(dimension);
+            String dimSource = CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(dimension, 0));
             final PlayerListHandlerNeoForge handler = new PlayerListHandlerNeoForge();
 
             Style style = Style.EMPTY;
@@ -96,7 +96,7 @@ public class DimensionViewerNeoForge {
 
             if (ConfigNeoForge.CHAT_DIM_HOVER.get()) {
                 dimComponent.withStyle(dimComponent.getStyle().withHoverEvent(
-                        new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(dimSource))
+                        new HoverEvent.ShowText(Component.literal(dimSource))
                 ));
             }
 
@@ -150,7 +150,7 @@ public class DimensionViewerNeoForge {
         }
     }
 
-    @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
+    @EventBusSubscriber(modid = Constants.MOD_ID)
     private static class ModEventBus {
         @SubscribeEvent
         public static void registerCommands(RegisterCommandsEvent event) {
@@ -158,7 +158,7 @@ public class DimensionViewerNeoForge {
         }
     }
 
-    @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = Constants.MOD_ID)
     private static class ModEventBusEvents {
         @SubscribeEvent
         public static void onConfigReloaded(ModConfigEvent.Reloading event) {

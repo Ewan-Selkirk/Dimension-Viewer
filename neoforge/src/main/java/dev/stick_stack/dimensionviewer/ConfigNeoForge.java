@@ -5,10 +5,12 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.stick_stack.dimensionviewer.ConfigCommon.allowedColorsComment;
-import static dev.stick_stack.dimensionviewer.ConfigCommon.modidRegex;
-
 public class ConfigNeoForge {
+
+    private static final String modidRegex = "([a-z_]+:[a-z0-9_/-]+)";
+    private static final String allowedColorsString = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, " +
+            "AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK" +
+            "\nOr any custom colours defined in `customColors`";
 
     private static final List<String> moddedDimensionList = new ArrayList<>();
     private static final List<String> dimensionAliases = new ArrayList<>();
@@ -49,16 +51,16 @@ public class ConfigNeoForge {
                         "    %d - Dimension Name*", "    %i - Italic font", "    %b - Bold font",
                         "    %u - Underline font", "    %o - Obfuscated font", "    %s - Strikethrough font" +
                         "\n*Required (well, not technically, but it defeats the purpose without it!)")
-                .define("listFormat", ConfigCommon.DEFAULT_LIST_FORMAT);
+                .define("listFormat", "%i<%d>");
         DIM_POSITION = BUILDER.comment("Whether the dimension should be placed before or after the player name")
                 .defineEnum("dimensionPosition", CommonUtils.DimensionPosition.APPEND);
         DEFAULT_COLOR = BUILDER.comment("The color to use for the dimension font if perDimColorPath is false.",
                         "(In the event of a modded dimension being entered, this color will be used as a fallback)")
-                .define("fontColor", ConfigCommon.DEFAULT_COLOR);
+                .define("fontColor", "DARK_AQUA");
         PER_DIM_COLOR = BUILDER.comment("Should each dimension have its own color?")
-                .define("perDimColor", ConfigCommon.PER_DIM_COLOR);
+                .define("perDimColor", true);
         ENABLE_ALIASES = BUILDER.comment("Global toggle for dimension aliases. Requires aliases to be set below.")
-                .define("enableAliases", ConfigCommon.ENABLE_ALIASES);
+                .define("enableAliases", true);
 
         PerDimensionCustomization();
 
@@ -73,14 +75,14 @@ public class ConfigNeoForge {
         BUILDER.comment("Per-Dimension Customization").push("dimension");
 
         OVERWORLD_COLOR = BUILDER.comment("Color to use for the Overworld" +
-                        allowedColorsComment)
-                .define("overworldColor", ConfigCommon.OVERWORLD_COLOR);
+                        allowedColorsString)
+                .define("overworldColor", "DARK_GREEN");
         NETHER_COLOR = BUILDER.comment("Color to use for the Nether" +
-                        allowedColorsComment)
-                .define("netherColor", ConfigCommon.NETHER_COLOR);
+                        allowedColorsString)
+                .define("netherColor", "DARK_RED");
         END_COLOR = BUILDER.comment("Color to use for the End" +
-                        allowedColorsComment)
-                .define("endColor", ConfigCommon.END_COLOR);
+                        allowedColorsString)
+                .define("endColor", "DARK_PURPLE");
 
         BUILDER.pop();
     }
@@ -89,11 +91,11 @@ public class ConfigNeoForge {
         BUILDER.comment("Chat-related Customization").push("chat");
 
         DIM_IN_CHAT_NAME = BUILDER.comment("Should a users' current dimension be added to chat messages?")
-                .define("dimInChatName", ConfigCommon.DIM_IN_CHAT_NAME);
+                .define("dimInChatName", true);
 
         CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display the source of a dimension",
                         "Requires `dimInChatName` to be set to true")
-                .define("chatDimHover", ConfigCommon.CHAT_DIM_HOVER);
+                .define("chatDimHover", true);
 
         BUILDER.pop();
     }
@@ -104,7 +106,7 @@ public class ConfigNeoForge {
         MODDED_DIMS = BUILDER.comment("A list of modded dimension resource IDs and a color in the format of \"modid:dim_id color\"" +
                 "\nFor example, Twilight Forest in Gold would be \"twilightforest:twilight_forest GOLD\"" +
                 "\nWill throw an exception if the color is not valid" +
-                allowedColorsComment
+                allowedColorsString
         ).defineListAllowEmpty(
                 List.of("moddedDimensions"),
                 () -> moddedDimensionList,

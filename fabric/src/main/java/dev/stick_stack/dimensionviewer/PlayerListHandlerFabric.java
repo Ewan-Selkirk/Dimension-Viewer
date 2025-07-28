@@ -12,7 +12,7 @@ public class PlayerListHandlerFabric extends PlayerListHandler {
             }
         }
 
-        return CommonUtils.dimensionToString(dimension);
+        return CommonUtils.toTitleCase(CommonUtils.splitResourceLocation(dimension, 1));
     }
     
 }

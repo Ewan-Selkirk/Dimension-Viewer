@@ -2,11 +2,9 @@ package dev.stick_stack.dimensionviewer;
 
 interface IConfig {
 
-    public IConfig getInstance();
+//    public IConfig getInstance();
 
-    static void saveConfig() {
-
-    }
+    void saveConfig();
 
     IConfig loadConfig();
 
