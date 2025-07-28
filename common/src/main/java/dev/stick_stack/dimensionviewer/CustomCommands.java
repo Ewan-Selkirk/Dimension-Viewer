@@ -2,17 +2,11 @@ package dev.stick_stack.dimensionviewer;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.stick_stack.dimensionviewer.platform.Services;
-import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ColorArgument;
@@ -20,45 +14,9 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-import java.util.Collection;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CustomCommands {
-
-    /*public static class CustomColorArgument implements ArgumentType<String> {
-
-        private static final Collection<String> EXAMPLES;
-
-        @Override
-        public String parse(StringReader reader) throws CommandSyntaxException {
-            return reader.getRead();
-        }
-
-        @Override
-        public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            return ArgumentType.super.listSuggestions(context, builder);
-        }
-
-        @Override
-        public Collection<String> getExamples() {
-            return ArgumentType.super.getExamples();
-        }
-
-        public static CustomColorArgument color() {
-            return new CustomColorArgument();
-        }
-
-        public static String getColor(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
-            return context.getArgument(name, String.class);
-        }
-
-        static {
-            EXAMPLES = Stream.of(ChatFormatting.values()).map(ChatFormatting::getName).collect(Collectors.toList());
-        }
-    }*/
 
     public static void RegisterCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("dimensionviewer")
@@ -84,19 +42,14 @@ public class CustomCommands {
                                 .then(Commands.argument("dimension", DimensionArgument.dimension())
                                         .executes(ctx -> {
                                             String dim = DimensionArgument.getDimension(ctx, "dimension").dimension().location().toString();
-                                            boolean hasAlias = Services.CONFIG.HasAlias(dim);
 
                                             String value = Services.CONFIG.GetAlias(dim);
-                                            if (hasAlias) {
-                                                ctx.getSource().sendSuccess(() -> Component.literal(value), true);
-                                                return 1;
-                                            } else /*if (!hasAlias)*/ {
+                                            if (Services.CONFIG.HasAlias(dim)) {
+                                                ctx.getSource().sendSuccess(() -> Component.literal("The alias for dimension %s is '%s'".formatted(dim, value)), true);
+                                            } else {
                                                 ctx.getSource().sendSuccess(() -> Component.literal("There is no alias set for dimension '%s'".formatted(dim)), true);
-                                                return 1;
-                                            } /*else {
-                                                ctx.getSource().sendFailure(Component.literal("Failed to get alias of dimension: %s".formatted(value)));
-                                                return 0;
-                                            }*/
+                                            }
+                                            return 1;
                                         })
                                 )
                         )
@@ -236,53 +189,56 @@ public class CustomCommands {
                 )
                 .then(Commands.literal("custom_colors")
                         .then(Commands.literal("get")
-                            .executes(ctx -> {
-                                MutableComponent response = Component.empty();
+                                .executes(ctx -> {
+                                    MutableComponent response = Component.empty();
 
-                                if (Services.CONFIG.GetAllCustomColors().size() == 0) {
-                                    ctx.getSource().sendSuccess(() -> Component.literal("No custom colors have been registered."), true);
-                                    return 1;
-                                }
-
-                                int i = 0;
-                                for (var color : Services.CONFIG.GetAllCustomColors()) {
-                                    var name = color.split(" ", 2)[0];
-
-                                    response.append(Component.literal(name).withColor(CommonUtils.customColorToInt(color.split(" "))));
-                                    if (i < Services.CONFIG.GetAllCustomColors().size() - 1) {
-                                        response.append(", ");
+                                    if (Services.CONFIG.GetAllCustomColors().size() == 0) {
+                                        ctx.getSource().sendSuccess(() -> Component.literal("No custom colors have been registered."), true);
+                                        return 1;
                                     }
 
-                                    i++;
-                                }
+                                    response.append(Component.literal("Custom colors registered: "));
 
-                                ctx.getSource().sendSuccess(() -> response, true);
-                                return 1;
-                            })
+                                    int i = 0;
+                                    for (var color : Services.CONFIG.GetAllCustomColors()) {
+                                        var name = color.split(" ", 2)[0];
+                                        var value = color.split(" ", 2)[1];
+
+                                        response.append(Component.literal("%s (%s)".formatted(name, value)).withColor(CommonUtils.customColorToInt(color.split(" "))));
+                                        if (i < Services.CONFIG.GetAllCustomColors().size() - 1) {
+                                            response.append(", ");
+                                        }
+
+                                        i++;
+                                    }
+
+                                    ctx.getSource().sendSuccess(() -> response, true);
+                                    return 1;
+                                })
                         )
                         .then(Commands.literal("add")
                                 .requires(src -> src.hasPermission(Commands.LEVEL_ADMINS))
                                 .then(Commands.argument("name", StringArgumentType.word())
-                                    .then(Commands.argument("color", StringArgumentType.greedyString())
-                                            .executes(ctx -> {
-                                                var name = StringArgumentType.getString(ctx, "name");
-                                                var color = StringArgumentType.getString(ctx, "color");
+                                        .then(Commands.argument("color", StringArgumentType.greedyString())
+                                                .executes(ctx -> {
+                                                    var name = StringArgumentType.getString(ctx, "name");
+                                                    var color = StringArgumentType.getString(ctx, "color");
 
-                                                if (Services.CONFIG.GetAllCustomColors().stream().anyMatch(c -> c.split(" ", 2)[0].equals(name))) {
-                                                    ctx.getSource().sendFailure(Component.literal("Failed to add custom color. Color with name '%s' already exists!".formatted(name)));
-                                                    return 0;
-                                                }
+                                                    if (Services.CONFIG.GetAllCustomColors().stream().anyMatch(c -> c.split(" ", 2)[0].equals(name))) {
+                                                        ctx.getSource().sendFailure(Component.literal("Failed to add custom color. Color with name '%s' already exists!".formatted(name)));
+                                                        return 0;
+                                                    }
 
-                                                if (color.matches("(?i)#[0-9a-f]{6}") || color.matches("r[0-9]{1,3} g[0-9]{1,3} b[0-9]{1,3}")) {
-                                                    Services.CONFIG.AddCustomColor(name.toUpperCase(Locale.ROOT), color);
-                                                    ctx.getSource().sendSuccess(() -> Component.literal("Successfully added new custom color!"), true);
-                                                    return 1;
-                                                } else {
-                                                    ctx.getSource().sendFailure(Component.literal("Failed to add custom color!\nColor needs to be in the form of '#123456' or 'r1 g52 b255'"));
-                                                    return 0;
-                                                }
-                                            })
-                                    )
+                                                    if (color.matches("(?i)#[0-9a-f]{6}") || color.matches("r[0-9]{1,3} g[0-9]{1,3} b[0-9]{1,3}")) {
+                                                        Services.CONFIG.AddCustomColor(name.toUpperCase(Locale.ROOT), color);
+                                                        ctx.getSource().sendSuccess(() -> Component.literal("Successfully added new custom color!"), true);
+                                                        return 1;
+                                                    } else {
+                                                        ctx.getSource().sendFailure(Component.literal("Failed to add custom color!\nColor needs to be in the form of '#123456' or 'r1 g23 b456'"));
+                                                        return 0;
+                                                    }
+                                                })
+                                        )
                                 )
                         )
                         .then(Commands.literal("remove")
@@ -349,19 +305,6 @@ public class CustomCommands {
             return -1;
         }
     }
-
-    /*public static int setDimensionAlias(CommandContext<CommandSourceStack> context, ServerLevel dimension, String alias) {
-        context.getSource().sendSuccess(() -> Component.literal(CommonUtils.dimensionToString(dimension.dimension().location()) + " - " + alias), true);
-        Services.CONFIG.SetAlias(dimension.dimension().location().toString(), alias);
-
-        return Command.SINGLE_SUCCESS;
-    }
-
-    public static int setDimensionColor(CommandContext<CommandSourceStack> context, ServerLevel dimension, ChatFormatting color) {
-        context.getSource().sendSuccess(() -> Component.literal(CommonUtils.dimensionToString(dimension.dimension().location()) + " - " + color.getSerializedName()), true);
-
-        return Command.SINGLE_SUCCESS;
-    }*/
 
     private static int refreshDisplayNames(CommandContext<CommandSourceStack> context, boolean manuallyCalled) {
         Services.CONFIG.RefreshPlayerData(context.getSource().getServer().getPlayerList());

@@ -162,7 +162,7 @@ public class FabricConfigHelper implements IConfigHelper {
                 for (String dim : ConfigFabric.get().MODDED_DIMS) {
                     var values = dim.split(" ", 2);
 
-                    if (values[0].equals(dim)) {
+                    if (dimId.equals(values[0])) {
                         ConfigFabric.get().MODDED_DIMS.set(i, "%s %s".formatted(dimId, color));
                         ConfigFabric.saveConfig();
                         return;

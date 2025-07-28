@@ -164,8 +164,8 @@ public class ForgeConfigHelper implements IConfigHelper {
                 for (String dim : ConfigForge.MODDED_DIMS.get()) {
                     var values = dim.split(" ", 2);
 
-                    if (values[0].equals(dim)) {
-                        dims.add(i, "%s %s".formatted(dimId, color));
+                    if (dimId.equals(values[0])) {
+                        dims.set(i, "%s %s".formatted(dimId, color));
                         ConfigForge.MODDED_DIMS.set(dims);
                         return;
                     }
