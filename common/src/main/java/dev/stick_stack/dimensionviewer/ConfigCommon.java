@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public class ConfigCommon {
 
-    public static final String modidRegex = "([a-z_]+:[a-z0-9_/-]+)";
+    public static final String modidRegex = "([a-z_]+:.+)";
     public static final String allowedColorsComment = "\nAllowed Values: DARK_RED, RED, GOLD, YELLOW, DARK_GREEN, GREEN, " +
             "AQUA, DARK_AQUA, DARK_BLUE, BLUE, LIGHT_PURPLE, DARK_PURPLE, WHITE, GRAY, DARK_GRAY, BLACK" +
             "\nOr any custom colours defined in `customColors`";

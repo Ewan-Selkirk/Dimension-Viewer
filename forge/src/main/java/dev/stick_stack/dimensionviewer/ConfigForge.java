@@ -6,14 +6,11 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.ArrayList;
 import java.util.List;
 
+import static dev.stick_stack.dimensionviewer.ConfigCommon.allowedColorsComment;
+import static dev.stick_stack.dimensionviewer.ConfigCommon.modidRegex;
+
 @Mod.EventBusSubscriber
 public class ConfigForge {
-
-    public static String BASE_DEFAULT_COLOR = "DARK_AQUA";
-    public static String BASE_OVERWORLD_COLOR = "DARK_GREEN";
-    public static String BASE_NETHER_COLOR = "DARK_RED";
-    public static String BASE_END_COLOR = "DARK_PURPLE";
-    public static String BASE_LIST_FORMAT = "%i<%d>";
 
     private static final List<String> moddedDimensionList = new ArrayList<>();
     private static final List<String> dimensionAliases = new ArrayList<>();
@@ -54,16 +51,16 @@ public class ConfigForge {
                         "    %d - Dimension Name*", "    %i - Italic font", "    %b - Bold font",
                         "    %u - Underline font", "    %o - Obfuscated font", "    %s - Strikethrough font" +
                         "\n*Required (well, not technically, but it defeats the purpose without it!)")
-                .define("listFormat", BASE_LIST_FORMAT);
+                .define("listFormat", ConfigCommon.DEFAULT_LIST_FORMAT);
         DIM_POSITION = BUILDER.comment("Whether the dimension should be placed before or after the player name")
                 .defineEnum("dimensionPosition", CommonUtils.DimensionPosition.APPEND);
         DEFAULT_COLOR = BUILDER.comment("The color to use for the dimension font if perDimColorPath is false.",
                         "(In the event of a modded dimension being entered, this color will be used as a fallback)")
-                .define("fontColor", BASE_DEFAULT_COLOR);
+                .define("fontColor", ConfigCommon.DEFAULT_COLOR);
         PER_DIM_COLOR = BUILDER.comment("Should each dimension have its own color?")
-                .define("perDimColor", true);
+                .define("perDimColor", ConfigCommon.PER_DIM_COLOR);
         ENABLE_ALIASES = BUILDER.comment("Global toggle for dimension aliases. Requires aliases to be set below.")
-                .define("enableAliases", true);
+                .define("enableAliases", ConfigCommon.ENABLE_ALIASES);
 
         PerDimensionCustomization();
 
@@ -78,14 +75,14 @@ public class ConfigForge {
         BUILDER.comment("Per-Dimension Customization").push("dimension");
 
         OVERWORLD_COLOR = BUILDER.comment("Color to use for the Overworld" +
-                        ConfigCommon.allowedColorsComment)
-                .define("overworldColor", BASE_OVERWORLD_COLOR);
+                        allowedColorsComment)
+                .define("overworldColor", ConfigCommon.OVERWORLD_COLOR);
         NETHER_COLOR = BUILDER.comment("Color to use for the Nether" +
-                        ConfigCommon.allowedColorsComment)
-                .define("netherColor", BASE_NETHER_COLOR);
+                        allowedColorsComment)
+                .define("netherColor", ConfigCommon.NETHER_COLOR);
         END_COLOR = BUILDER.comment("Color to use for the End" +
-                        ConfigCommon.allowedColorsComment)
-                .define("endColor", BASE_END_COLOR);
+                        allowedColorsComment)
+                .define("endColor", ConfigCommon.END_COLOR);
 
         BUILDER.pop();
     }
@@ -94,11 +91,11 @@ public class ConfigForge {
         BUILDER.comment("Chat-related Customization").push("chat");
 
         DIM_IN_CHAT_NAME = BUILDER.comment("Should a users' current dimension be added to chat messages?")
-                .define("dimInChatName", true);
+                .define("dimInChatName", ConfigCommon.DIM_IN_CHAT_NAME);
 
         CHAT_DIM_HOVER = BUILDER.comment("Add a hover effect in chat that will display the source of a dimension",
                         "Requires `dimInChatName` to be set to true")
-                .define("chatDimHover", true);
+                .define("chatDimHover", ConfigCommon.CHAT_DIM_HOVER);
 
         BUILDER.pop();
     }
@@ -109,23 +106,24 @@ public class ConfigForge {
         MODDED_DIMS = BUILDER.comment("A list of modded dimension resource IDs and a color in the format of \"modid:dim_id color\"" +
                 "\nFor example, Twilight Forest in Gold would be \"twilightforest:twilight_forest GOLD\"" +
                 "\nWill throw an exception if the color is not valid" +
-                ConfigCommon.allowedColorsComment
+                allowedColorsComment +
+                "\nSupports Regex!"
         ).defineListAllowEmpty(
                 List.of("moddedDimensions"),
                 () -> moddedDimensionList,
-                (item) -> (item instanceof String i && i.matches(ConfigCommon.modidRegex + " ([A-Z_]+)")
-//                                && (FontColor.contains(i.split(" ")[1]))
+                (item) -> (item instanceof String i && i.matches(modidRegex + " ([A-Z_]+)")
                 )
         );
 
         DIM_ALIASES = BUILDER.comment("A list of aliases to use instead of the original dimension ID." +
                 "\nUses the format 'modid:dim_id New Name'." +
                 "\nFor example, to replace 'Overworld' with 'Grasslands' you would use 'minecraft:overworld Grasslands'" +
-                "\nAliases support the same tokens as `listFormat`, allowing you to make a specific dimension bold or italic or both!"
+                "\nAliases support the same tokens as `listFormat`, allowing you to make a specific dimension bold or italic or both!" +
+                "\nSupports Regex!"
         ).defineListAllowEmpty(
                 List.of("dimensionAliases"),
                 () -> dimensionAliases,
-                (item) -> (item instanceof String i && i.matches(ConfigCommon.modidRegex + " (.*)"))
+                (item) -> (item instanceof String i && i.matches(modidRegex + " (.*)"))
         );
 
         BUILDER.pop();
@@ -142,11 +140,10 @@ public class ConfigForge {
                 List.of("customColors"),
                 () -> customColourList,
                 (item) -> (item instanceof String i
-                        && i.matches("[A-Z_]+ (#(?:[0-9a-fA-F]{3}){1,2}|(?:[rh][0-9]{1,3} [gs][0-9]{1,3} [bv][0-9]{1,3}[ ]?))")
+                        && i.matches("[A-Z_]+ (#(?:[0-9a-fA-F]{3}){1,2}|[rhRH][0-9]{1,3} [gsGS][0-9]{1,3} [bvBV][0-9]{1,3} ?)")
 //                                && !customColourList.contains(i.split(" ")[0])
                         && customColourList.stream().noneMatch((p) -> p.split(" ")[0].equals(i.split(" ")[0]))
                 )
         );
     }
-
 }

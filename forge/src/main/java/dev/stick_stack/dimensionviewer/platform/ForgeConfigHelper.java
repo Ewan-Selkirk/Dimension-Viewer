@@ -14,27 +14,27 @@ public class ForgeConfigHelper implements IConfigHelper {
 
     @Override
     public String BaseDefaultColor() {
-        return ConfigForge.BASE_DEFAULT_COLOR;
+        return ConfigCommon.DEFAULT_COLOR;
     }
 
     @Override
     public String BaseOverworldColor() {
-        return ConfigForge.BASE_OVERWORLD_COLOR;
+        return ConfigCommon.OVERWORLD_COLOR;
     }
 
     @Override
     public String BaseNetherColor() {
-        return ConfigForge.BASE_NETHER_COLOR;
+        return ConfigCommon.NETHER_COLOR;
     }
 
     @Override
     public String BaseEndColor() {
-        return ConfigForge.BASE_END_COLOR;
+        return ConfigCommon.END_COLOR;
     }
 
     @Override
     public String BaseListFormat() {
-        return ConfigForge.BASE_LIST_FORMAT;
+        return ConfigCommon.DEFAULT_LIST_FORMAT;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ForgeConfigHelper implements IConfigHelper {
 
     @Override
     public String ListFormat() {
-        return ConfigForge.LIST_FORMAT.get();
+        return ConfigCommon.DEFAULT_LIST_FORMAT;
     }
 
     @Override
